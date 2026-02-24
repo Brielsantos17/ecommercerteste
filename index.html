@@ -256,21 +256,48 @@
   .modal {
     background: var(--white);
     border-radius: 24px;
-    padding: 40px;
     width: 100%;
     max-width: 600px;
     box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
     max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
+    overflow: hidden;
   }
-  .modal h3 {
+  .modal-header {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--white);
+  }
+  .modal-header h3 {
     font-family: 'Playfair Display', serif;
     font-size: 24px;
     color: var(--green);
-    margin-bottom: 28px;
+    margin: 0;
   }
-  .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; }
+  .close-btn {
+    background: none; border: none; font-size: 28px; line-height: 1;
+    color: var(--gray); cursor: pointer; padding: 0 8px; transition: color 0.2s;
+  }
+  .close-btn:hover { color: #e63946; }
+  
+  .modal-body {
+    padding: 32px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .modal-footer {
+    padding: 20px 32px;
+    border-top: 1px solid var(--border);
+    background: var(--off-white);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
 
   /* SECTION BLOCKS */
   .section-block {
@@ -321,10 +348,10 @@
   .fin-card.liquido .value { color: #1a2e23; }
 
   /* =========================================================
-     🔥 MOBILE ERP UI / UX PERFECT (A Mágica acontece aqui)
+     🔥 MOBILE ERP UI / UX PERFECT
      ========================================================= */
   @media (max-width: 768px) {
-    /* 1. Bottom Navigation Native Style */
+    /* Bottom Navigation Native Style */
     .sidebar {
       width: 100%;
       height: 72px;
@@ -336,44 +363,19 @@
       padding-bottom: env(safe-area-inset-bottom);
     }
     .logo, .sidebar-footer { display: none; }
-    nav {
-      padding: 0;
-      display: flex;
-      flex-direction: row;
-      width: 100%;
-      justify-content: space-around;
-      align-items: center;
-    }
-    .nav-item {
-      flex-direction: column;
-      gap: 4px;
-      padding: 8px 0;
-      flex: 1;
-      justify-content: center;
-      border-left: none;
-      border-top: 3px solid transparent; 
-    }
-    .nav-item.active {
-      border-left: none;
-      border-top-color: var(--green-mid);
-      background: transparent;
-    }
-    .nav-item span:not(.nav-icon) {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-    }
+    nav { padding: 0; display: flex; flex-direction: row; width: 100%; justify-content: space-around; align-items: center; }
+    .nav-item { flex-direction: column; gap: 4px; padding: 8px 0; flex: 1; justify-content: center; border-left: none; border-top: 3px solid transparent; }
+    .nav-item.active { border-left: none; border-top-color: var(--green-mid); background: transparent; }
+    .nav-item span:not(.nav-icon) { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; }
     .nav-icon { font-size: 22px; }
 
-    /* 2. Main Container adjustments */
+    /* Main Container adjustments */
     .main { margin-left: 0; padding: 24px 16px 100px 16px; }
-    
     .page-header { flex-direction: column; align-items: stretch; gap: 16px; margin-bottom: 24px; }
     .page-header h2 { font-size: 26px; }
     .page-header .btn { width: 100%; justify-content: center; } 
 
-    /* 3. Cards Grids */
+    /* Cards Grids */
     .cards-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .card { padding: 16px; border-radius: 12px; }
     .card-value { font-size: 24px; }
@@ -381,82 +383,57 @@
     .fin-card { padding: 16px; border-radius: 12px; }
     .fin-card .value { font-size: 22px; }
     
-    /* 4. Filter Layout optimized */
+    /* Filter Layout optimized */
     .section-block { padding: 16px; border-radius: 12px; }
     .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .filter-row .btn { grid-column: 1 / -1; margin-top: 4px; }
 
-    /* 5. FORM LAYOUT */
-    .form-row.cols-3, .form-row.cols-2 { grid-template-columns: 1fr; gap: 16px; }
-    .form-group input, .form-group select { font-size: 16px; } /* Prevents iOS auto-zoom */
-
-    /* 6. MODAL BOTTOM SHEET NATIVE FEEL */
+    /* 📱 OTIMIZAÇÃO DOS MODAIS E FORMULÁRIOS MOBILE */
     .modal-overlay { align-items: flex-end; padding: 0; }
     .modal {
       border-radius: 24px 24px 0 0;
-      padding: 24px 20px;
       max-height: 85vh;
-      padding-bottom: calc(24px + env(safe-area-inset-bottom));
       animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    /* Puxador do Modal */
-    .modal::before {
-      content: '';
-      display: block;
-      width: 40px; height: 5px;
-      background: var(--border);
-      border-radius: 5px;
-      margin: 0 auto 20px auto;
+    .modal-header { padding: 20px; }
+    .modal-header h3 { font-size: 20px; }
+    .modal-body { padding: 20px; }
+    
+    /* Footer Fixo: Ações sempre visíveis e fáceis de clicar */
+    .modal-footer { 
+      padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); 
+      flex-direction: column-reverse; 
+      gap: 12px; 
     }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .modal h3 { font-size: 20px; margin-bottom: 20px; }
-    .modal-actions { flex-direction: column-reverse; gap: 12px; margin-top: 24px; }
-    .modal-actions .btn { width: 100%; margin: 0; }
+    .modal-footer .btn { width: 100%; margin: 0; }
 
-    /* 7. REVOLUÇÃO NAS TABELAS: Table to Cards (List View) */
+    /* Ajuste Inteligente do Grid do Formulário */
+    .form-row { gap: 16px; margin-bottom: 16px; }
+    /* Campos curtos lado a lado para economizar scroll */
+    .form-row.cols-3 { grid-template-columns: 1fr 1fr; }
+    .form-row.cols-3 .full-mobile { grid-column: 1 / -1; } /* Força campo longo (Ex: Preço) a ocupar tudo */
+    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .form-group input, .form-group select { font-size: 16px; } 
+
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    /* Table to Cards (List View) */
     .table-wrap { background: transparent; border: none; box-shadow: none; overflow: visible; }
     table, thead, tbody, th, td, tr { display: block; width: 100%; min-width: auto; }
-    thead tr { position: absolute; top: -9999px; left: -9999px; } /* Esconde o cabeçalho original */
+    thead tr { position: absolute; top: -9999px; left: -9999px; } 
     
     tr {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin-bottom: 16px;
-      padding: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      background: var(--white); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
     td {
-      border: none;
-      padding: 6px 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-      text-align: right;
+      border: none; padding: 6px 0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; text-align: right;
     }
-    /* Usa o data-label do HTML para criar as colunas falsas à esquerda */
     td::before {
-      content: attr(data-label);
-      font-weight: 700;
-      color: var(--gray);
-      text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 0.5px;
-      text-align: left;
-      margin-right: 12px;
+      content: attr(data-label); font-weight: 700; color: var(--gray); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; text-align: left; margin-right: 12px;
     }
-    /* Estilização da linha de Ações para separar visualmente */
-    td:last-child {
-      justify-content: flex-end;
-      gap: 12px;
-      margin-top: 12px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-    }
-    td:last-child::before { display: none; } /* Esconde o label de ações */
-    
-    td .btn-sm { min-height: 40px; padding: 0 20px; font-size: 14px; } /* Botões de ação mais clicáveis */
+    td:last-child { justify-content: flex-end; gap: 12px; margin-top: 12px; padding-top: 16px; border-top: 1px solid var(--border); }
+    td:last-child::before { display: none; } 
+    td .btn-sm { min-height: 40px; padding: 0 20px; font-size: 14px; } 
   }
 </style>
 </head>
@@ -496,7 +473,7 @@
   <div class="page active" id="page-dashboard">
     <div class="page-header">
       <div>
-        <h2>Bem-vindos!</h2>
+        <h2>Bem-vinda! 🌿</h2>
         <p>Resumo geral do Ateliê 03</p>
       </div>
     </div>
@@ -523,7 +500,7 @@
       </div>
     </div>
     <div class="section-block">
-      <h3>Itens com Estoque Baixo</h3>
+      <h3>Itens com Estoque Baixo (≤ 3)</h3>
       <div id="dash-low-stock">
         <div class="empty"><div class="empty-icon">✅</div><p>Nenhum item com estoque crítico</p></div>
       </div>
@@ -712,12 +689,16 @@
 
 <div class="modal-overlay" id="modal-item">
   <div class="modal">
-    <h3>✨ Cadastro de Item</h3>
-    <div>
-      <div class="form-row cols-3">
-        <div class="form-group" style="grid-column:1/-1">
+    <div class="modal-header">
+      <h3>✨ Novo Item</h3>
+      <button class="close-btn" onclick="closeModal('modal-item')">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
           <label>Nome do Item *</label>
-          <input type="text" id="item-nome" placeholder="Ex: Biquíni Tropical Rosa">
+          <input type="text" id="item-nome" placeholder="Ex: Biquíni Tropical">
         </div>
       </div>
       <div class="form-row cols-3">
@@ -737,7 +718,7 @@
           <label>Qtd *</label>
           <input type="number" id="item-qtd" placeholder="0" min="0">
         </div>
-        <div class="form-group">
+        <div class="form-group full-mobile">
           <label>Preço (R$)</label>
           <input type="number" id="item-preco" placeholder="0.00" step="0.01" min="0">
         </div>
@@ -753,24 +734,30 @@
         </div>
       </div>
       <input type="hidden" id="item-edit-id">
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline" onclick="closeModal('modal-item')">Cancelar</button>
-        <button type="button" class="btn btn-outline" onclick="salvarItem(false)">💾 Salvar</button>
-        <button type="button" class="btn" onclick="salvarItem(true)">➕ Salvar e Novo</button>
-      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="salvarItem(false)">💾 Salvar e Fechar</button>
+      <button type="button" class="btn" onclick="salvarItem(true)">➕ Salvar e Novo</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-saida">
   <div class="modal">
-    <h3>📦 Registrar Saída</h3>
-    <div>
-      <div class="form-row cols-2">
+    <div class="modal-header">
+      <h3>📦 Registrar Saída</h3>
+      <button class="close-btn" onclick="closeModal('modal-saida')">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-row">
         <div class="form-group">
           <label>Data *</label>
           <input type="date" id="saida-data">
         </div>
+      </div>
+      <div class="form-row">
         <div class="form-group">
           <label>Item *</label>
           <select id="saida-item" onchange="autoPreco()">
@@ -787,20 +774,23 @@
           <label>Devolução</label>
           <input type="number" id="saida-dev" placeholder="0" min="0" value="0">
         </div>
-        <div class="form-group">
+        <div class="form-group full-mobile">
           <label>Valor Un. (R$)</label>
           <input type="number" id="saida-valor" placeholder="0.00" step="0.01" min="0">
         </div>
       </div>
-      <div class="form-group" style="margin-bottom:16px;">
-        <label>Nº Pedido Shopee</label>
-        <input type="text" id="saida-pedido" placeholder="Ex: 250220XXXXX">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nº Pedido Shopee</label>
+          <input type="text" id="saida-pedido" placeholder="Ex: 250220XXXXX">
+        </div>
       </div>
       <input type="hidden" id="saida-edit-id">
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline" onclick="closeModal('modal-saida')">Cancelar</button>
-        <button type="button" class="btn" onclick="salvarSaida()">💾 Registrar</button>
-      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="closeModal('modal-saida')">Cancelar</button>
+      <button type="button" class="btn" onclick="salvarSaida()">💾 Registrar</button>
     </div>
   </div>
 </div>
@@ -836,16 +826,21 @@ function showPage(name, el) {
   if (name === 'saidas') renderSaidas();
   if (name === 'financeiro') renderFinanceiro();
   if (name === 'dashboard') renderDash();
-  window.scrollTo(0,0); // Rola pro topo ao trocar de tela no mobile
+  window.scrollTo(0,0); 
 }
 
 // MODAL
 function openModal(id) {
   if (id === 'modal-saida') populateSaidaSelect();
   document.getElementById(id).classList.add('open');
+  // Impede rolagem do fundo (body)
+  document.body.style.overflow = 'hidden';
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
+  // Restaura rolagem do fundo
+  document.body.style.overflow = '';
+  
   if (id === 'modal-item') resetItemForm();
   if (id === 'modal-saida') resetSaidaForm();
 }
@@ -876,6 +871,8 @@ function salvarItem(manterAberto = false) {
   if (manterAberto) {
     resetItemForm();
     document.getElementById('item-nome').focus(); 
+    // Scroll modal de volta pro topo
+    document.querySelector('#modal-item .modal-body').scrollTo(0,0);
   } else {
     closeModal('modal-item');
   }
@@ -889,7 +886,6 @@ function renderEstoque() {
   }
   const sizeBadge = { PP:'badge-pp', P:'badge-p', M:'badge-m', G:'badge-g', GG:'badge-gg', Único:'badge-u' };
   
-  // A mágica acontece aqui: os atributos "data-label" alimentam o CSS no Mobile!
   tbody.innerHTML = estoque.map(i => `
     <tr>
       <td data-label="Item"><strong>${i.nome}</strong>${i.cor ? `<br><small style="color:var(--gray);font-weight:normal">${i.cor}</small>` : ''}${i.sku ? `<br><small style="color:var(--gray);font-weight:normal">${i.sku}</small>` : ''}</td>
