@@ -327,7 +327,7 @@
   }
   .filter-row .form-group { margin: 0; min-width: 140px; flex: 1; }
 
-  /* EMPTY STATES - Layout flex centralizado em todo lugar */
+  /* EMPTY STATES */
   .empty { 
     display: flex;
     flex-direction: column;
@@ -408,7 +408,6 @@
     .modal-header h3 { font-size: 20px; }
     .modal-body { padding: 20px; }
     
-    /* Footer Fixo: Ações sempre visíveis e fáceis de clicar */
     .modal-footer { 
       padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); 
       flex-direction: column-reverse; 
@@ -416,7 +415,6 @@
     }
     .modal-footer .btn { width: 100%; margin: 0; }
 
-    /* Ajuste Inteligente do Grid do Formulário */
     .form-row { gap: 16px; margin-bottom: 16px; }
     .form-row.cols-3 { grid-template-columns: 1fr 1fr; }
     .form-row.cols-3 .full-mobile { grid-column: 1 / -1; } 
@@ -443,7 +441,6 @@
     td:last-child::before { display: none; } 
     td .btn-sm { min-height: 40px; padding: 0 20px; font-size: 14px; } 
 
-    /* FORÇA A CENTRALIZAÇÃO DA TELA VAZIA (EMPTY STATE) NO MOBILE */
     td.empty-td {
       display: flex;
       justify-content: center;
@@ -514,7 +511,7 @@
       </div>
       <div class="card">
         <div class="card-label">Rec. Líquida</div>
-        <div class="card-value" id="dash-receita">R$0</div>
+        <div class="card-value" id="dash-receita">R$ 0,00</div>
         <div class="card-sub">livre de devs.</div>
       </div>
     </div>
@@ -815,6 +812,11 @@
 </div>
 
 <script>
+// FUNÇÃO DE MOEDA (FORMATO BRASILEIRO R$ 1.000,00)
+function formatCurrency(value) {
+  return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
 // DATA STORE
 let estoque = JSON.parse(localStorage.getItem('atelie_estoque') || '[]');
 let saidas = JSON.parse(localStorage.getItem('atelie_saidas') || '[]');
@@ -907,7 +909,7 @@ function renderEstoque() {
       <td data-label="Item"><strong>${i.nome}</strong>${i.cor ? `<br><small style="color:var(--gray);font-weight:normal">${i.cor}</small>` : ''}${i.sku ? `<br><small style="color:var(--gray);font-weight:normal">${i.sku}</small>` : ''}</td>
       <td data-label="Tamanho"><span class="badge ${sizeBadge[i.tamanho]||'badge-u'}">${i.tamanho}</span></td>
       <td data-label="Quantidade"><span style="font-weight:700;color:${i.qtd<=3?'#e63946':'var(--green)'}">${i.qtd}</span>${i.qtd<=3?'<span style="font-size:11px;color:#e63946;margin-left:5px;">⚠️ Baixo</span>':''}</td>
-      <td data-label="Preço">R$ ${i.preco ? i.preco.toFixed(2) : '0.00'}</td>
+      <td data-label="Preço">${i.preco ? formatCurrency(i.preco) : formatCurrency(0)}</td>
       <td data-label="Ações">
         <button type="button" class="btn btn-sm btn-outline" onclick="editItem(${i.id})">✏️ Editar</button>
         <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem(${i.id})">🗑️</button>
@@ -1052,7 +1054,7 @@ function renderSaidas() {
       <td data-label="Tamanho">${s.itemTamanho || '-'}</td>
       <td data-label="Entregue" style="font-weight:700;color:var(--green)">${s.qtd}</td>
       <td data-label="Devolução">${s.dev > 0 ? `<span class="badge badge-dev">↩️ ${s.dev}</span>` : '<span class="badge badge-ok">0</span>'}</td>
-      <td data-label="Valor">R$ ${s.valor.toFixed(2)}</td>
+      <td data-label="Valor">${formatCurrency(s.valor)}</td>
       <td data-label="Ações">
         <button type="button" class="btn btn-sm btn-outline" onclick="editSaida(${s.id})">✏️ Editar</button>
         <button type="button" class="btn btn-sm btn-danger" onclick="deleteSaida(${s.id})">🗑️</button>
@@ -1141,9 +1143,9 @@ function renderFinanceiro() {
   const devVal = list.reduce((s,x) => s + (x.valor * x.dev), 0);
   const liquida = bruta - devVal;
 
-  document.getElementById('fin-bruta').textContent = 'R$ ' + bruta.toFixed(2);
-  document.getElementById('fin-dev').textContent = 'R$ ' + devVal.toFixed(2);
-  document.getElementById('fin-liquida').textContent = 'R$ ' + liquida.toFixed(2);
+  document.getElementById('fin-bruta').textContent = formatCurrency(bruta);
+  document.getElementById('fin-dev').textContent = formatCurrency(devVal);
+  document.getElementById('fin-liquida').textContent = formatCurrency(liquida);
 
   const map = {};
   list.forEach(s => {
@@ -1165,7 +1167,7 @@ function renderFinanceiro() {
         <td data-label="Tamanho">${r.tam}</td>
         <td data-label="Qtd Vendida" style="font-weight:700;color:var(--green)">${r.qtd}</td>
         <td data-label="Devoluções" style="color:#e63946">${r.dev}</td>
-        <td data-label="Receita Líq." style="font-weight:700">R$ ${r.val.toFixed(2)}</td>
+        <td data-label="Receita Líq." style="font-weight:700">${formatCurrency(r.val)}</td>
       </tr>
     `).join('');
   }
@@ -1183,7 +1185,7 @@ function renderDash() {
 
   document.getElementById('dash-total-pedidos').textContent = totalPed;
   document.getElementById('dash-total-dev').textContent = totalDev;
-  document.getElementById('dash-receita').textContent = 'R$' + liquida.toFixed(0);
+  document.getElementById('dash-receita').textContent = formatCurrency(liquida);
 
   const low = estoque.filter(i => i.qtd <= 3);
   const cont = document.getElementById('dash-low-stock');
