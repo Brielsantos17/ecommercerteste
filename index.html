@@ -178,4 +178,841 @@
   }
   .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
   .modal {
-    background: var(--white); border-radius: 24px; width: 100%; max-width:
+    background: var(--white); border-radius: 24px; width: 100%; max-width: 600px; box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+    display: flex; flex-direction: column; max-height: 90vh; overflow: hidden;
+  }
+  .modal-header { padding: 24px 32px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--white); }
+  .modal-header h3 { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--green); margin: 0; }
+  .close-btn { background: none; border: none; font-size: 28px; line-height: 1; color: var(--gray); cursor: pointer; padding: 0 8px; transition: color 0.2s; }
+  .close-btn:hover { color: #e63946; }
+  .modal-body { padding: 32px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .modal-footer { padding: 20px 32px; border-top: 1px solid var(--border); background: var(--off-white); display: flex; gap: 12px; justify-content: flex-end; }
+
+  /* SECTION BLOCKS */
+  .section-block { background: var(--white); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); padding: 28px; margin-bottom: 24px; }
+  .section-block h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--green); margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+
+  /* FILTERS & EMPTY */
+  .filter-row { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; }
+  .filter-row .form-group { margin: 0; min-width: 140px; flex: 1; }
+  .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 48px 20px; color: var(--gray); width: 100%; }
+  .empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.8; }
+  .empty p { font-size: 15px; }
+
+  /* FINANCE CARDS */
+  .fin-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 32px; }
+  .fin-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 28px; box-shadow: var(--shadow); min-width: 0; }
+  .fin-card .label { font-size: 13px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; }
+  .fin-card .value { font-size: 32px; font-weight: 700; margin-top: 8px; word-break: break-word; overflow-wrap: break-word; }
+  .fin-card.receita .value { color: var(--green); }
+  .fin-card.devolucao .value { color: #e63946; }
+  .fin-card.liquido .value { color: #1a2e23; }
+
+  /* COLLAPSIBLE AREA (ACORDEÃO) */
+  .collapsible-header {
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; padding: 8px 0;
+  }
+  .collapsible-header h3 { margin-bottom: 0; padding-bottom: 0; border: none; }
+  .collapsible-icon { color: var(--green); font-size: 16px; font-weight: bold; transition: transform 0.3s ease; }
+  .collapsible-content {
+    display: block; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);
+    animation: fadeIn 0.3s ease;
+  }
+
+  /* =========================================================
+     🔥 MOBILE ERP UI / UX PERFECT
+     ========================================================= */
+  @media (max-width: 768px) {
+    .lock-header h1 { font-size: 28px; }
+    .pin-dots { margin-bottom: 40px; }
+    .keypad { gap: 12px 20px; }
+    .keypad-btn { width: 68px; height: 68px; font-size: 26px; }
+
+    .sidebar {
+      width: 100%; height: 72px; min-height: auto; flex-direction: row; top: auto; bottom: 0;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.1); padding-bottom: env(safe-area-inset-bottom);
+    }
+    .logo, .sidebar-footer { display: none; }
+    nav { padding: 0; display: flex; flex-direction: row; width: 100%; justify-content: space-around; align-items: center; }
+    .nav-item { flex-direction: column; gap: 4px; padding: 8px 0; flex: 1; justify-content: center; border-left: none; border-top: 3px solid transparent; }
+    .nav-item.active { border-left: none; border-top-color: var(--green-mid); background: transparent; }
+    .nav-item span:not(.nav-icon) { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; }
+    .nav-icon { font-size: 22px; }
+
+    .main { margin-left: 0; padding: 24px 16px 100px 16px; }
+    .page-header { flex-direction: column; align-items: stretch; gap: 16px; margin-bottom: 24px; }
+    .page-header h2 { font-size: 26px; }
+    .page-header .btn { width: 100%; justify-content: center; } 
+
+    .cards-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .card { padding: 16px; border-radius: 12px; }
+    .card-value { font-size: 19px; letter-spacing: -0.5px; } 
+    .fin-cards { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .fin-card { padding: 16px; border-radius: 12px; }
+    .fin-card .value { font-size: 19px; letter-spacing: -0.5px; } 
+    
+    .section-block { padding: 16px; border-radius: 12px; }
+    .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .filter-row .btn { grid-column: 1 / -1; margin-top: 4px; }
+
+    /* Modal otimizado sem travar o scroll do body para não bugar o teclado */
+    .modal-overlay { align-items: flex-end; padding: 0; }
+    .modal { border-radius: 24px 24px 0 0; max-height: 85vh; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    .modal-header { padding: 20px; }
+    .modal-header h3 { font-size: 20px; }
+    .modal-body { padding: 20px; }
+    .modal-footer { padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); flex-direction: column-reverse; gap: 12px; }
+    .modal-footer .btn { width: 100%; margin: 0; }
+    .form-row { gap: 16px; margin-bottom: 16px; }
+    .form-row.cols-3 { grid-template-columns: 1fr 1fr; }
+    .form-row.cols-3 .full-mobile { grid-column: 1 / -1; } 
+    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    .table-wrap { background: transparent; border: none; box-shadow: none; overflow: visible; }
+    table, thead, tbody, th, td, tr { display: block; width: 100%; min-width: auto; }
+    thead tr { position: absolute; top: -9999px; left: -9999px; } 
+    tr { background: var(--white); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    td { border: none; padding: 6px 0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; text-align: right; }
+    td::before { content: attr(data-label); font-weight: 700; color: var(--gray); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; text-align: left; margin-right: 12px; }
+    td:last-child { justify-content: flex-end; gap: 12px; margin-top: 12px; padding-top: 16px; border-top: 1px solid var(--border); }
+    td:last-child::before { display: none; } 
+    td .btn-sm { min-height: 40px; padding: 0 20px; font-size: 14px; } 
+    td.empty-td { display: flex; justify-content: center; align-items: center; border: none; padding: 32px 16px; box-shadow: none; }
+    td.empty-td::before { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="lock-screen">
+  <div class="lock-header">
+    <h1>Ateliê 03</h1>
+    <p>Digite a senha de acesso</p>
+  </div>
+  
+  <input type="tel" id="hidden-pin" maxlength="6" style="position: absolute; opacity: 0; pointer-events: none; left: -999px;" autocomplete="off">
+  
+  <div class="pin-dots" id="pin-dots" onclick="document.getElementById('hidden-pin').focus()">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="keypad">
+    <button type="button" class="keypad-btn" onclick="addPin('1')">1</button>
+    <button type="button" class="keypad-btn" onclick="addPin('2')">2</button>
+    <button type="button" class="keypad-btn" onclick="addPin('3')">3</button>
+    <button type="button" class="keypad-btn" onclick="addPin('4')">4</button>
+    <button type="button" class="keypad-btn" onclick="addPin('5')">5</button>
+    <button type="button" class="keypad-btn" onclick="addPin('6')">6</button>
+    <button type="button" class="keypad-btn" onclick="addPin('7')">7</button>
+    <button type="button" class="keypad-btn" onclick="addPin('8')">8</button>
+    <button type="button" class="keypad-btn" onclick="addPin('9')">9</button>
+    <div style="width: 100%; height: 100%;"></div> 
+    <button type="button" class="keypad-btn" onclick="addPin('0')">0</button>
+    <button type="button" class="keypad-btn action-btn" onclick="removePin()">⌫</button>
+  </div>
+</div>
+
+<aside class="sidebar">
+  <div class="logo">
+    <h1>Ateliê 03</h1>
+    <span>Gestão</span>
+  </div>
+  <nav>
+    <div class="nav-item" onclick="showPage('dashboard', this)" data-target="dashboard">
+      <span class="nav-icon">🏠</span>
+      <span>Início</span>
+    </div>
+    <div class="nav-item" onclick="showPage('estoque', this)" data-target="estoque">
+      <span class="nav-icon">👙</span>
+      <span>Estoque</span>
+    </div>
+    <div class="nav-item" onclick="showPage('saidas', this)" data-target="saidas">
+      <span class="nav-icon">📦</span>
+      <span>Saídas</span>
+    </div>
+    <div class="nav-item" onclick="showPage('financeiro', this)" data-target="financeiro">
+      <span class="nav-icon">💰</span>
+      <span>Finanças</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div>Shopee Seller</div>
+    <div style="margin-top:4px;font-size:11px;">Ateliê 03 © 2026</div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div>
+        <h2>Bem vindos</h2>
+        <p>Resumo geral do Ateliê 03</p>
+      </div>
+    </div>
+    <div class="cards-row" id="dash-cards">
+      <div class="card">
+        <div class="card-label">Estoque</div>
+        <div class="card-value" id="dash-total-itens">0</div>
+        <div class="card-sub">modelos ativos</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Entregues</div>
+        <div class="card-value" id="dash-total-pedidos">0</div>
+        <div class="card-sub">total saídas</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Devoluções</div>
+        <div class="card-value" id="dash-total-dev">0</div>
+        <div class="card-sub">recebidos</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Rec. Líquida</div>
+        <div class="card-value" id="dash-receita">R$ 0,00</div>
+        <div class="card-sub">livre de devs.</div>
+      </div>
+    </div>
+    <div class="section-block">
+      <h3>Itens com Estoque Baixo (≤ 3)</h3>
+      <div id="dash-low-stock">
+        <div class="empty"><div class="empty-icon">✅</div><p>Nenhum item com estoque crítico</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-estoque">
+    <div class="page-header">
+      <div>
+        <h2>Estoque</h2>
+        <p>Cadastre e gerencie seus biquínis</p>
+      </div>
+      <button type="button" class="btn" onclick="openModal('modal-item')">➕ Novo Item</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Tamanho</th>
+            <th>Quantidade</th>
+            <th>Preço (R$)</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="estoque-body">
+          <tr><td colspan="5" class="empty-td"><div class="empty"><div class="empty-icon">👙</div><p>Nenhum item cadastrado ainda.</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="page" id="page-saidas">
+    <div class="page-header">
+      <div>
+        <h2>Saídas</h2>
+        <p>Pedidos entregues e devoluções</p>
+      </div>
+      <button type="button" class="btn" onclick="openModal('modal-saida')">➕ Registrar Saída</button>
+    </div>
+
+    <div class="section-block" style="padding-bottom: 16px;">
+      <div class="collapsible-header" onclick="toggleRelatorios()">
+        <h3>🗓️ Filtros e Resumo</h3>
+        <span class="collapsible-icon" id="toggle-relatorios-icon">▼</span>
+      </div>
+      
+      <div class="collapsible-content" id="relatorios-content">
+        <div class="filter-row">
+          <div class="form-group">
+            <label>Data Início</label>
+            <input type="date" id="filter-inicio" onchange="limparSelectsEFiltrar()">
+          </div>
+          <div class="form-group">
+            <label>Data Fim</label>
+            <input type="date" id="filter-fim" onchange="limparSelectsEFiltrar()">
+          </div>
+          <div class="form-group">
+            <label>Mês</label>
+            <select id="filter-mes" onchange="aplicarFiltroMes()">
+              <option value="">Todos</option>
+              <option value="01">Jan</option>
+              <option value="02">Fev</option>
+              <option value="03">Mar</option>
+              <option value="04">Abr</option>
+              <option value="05">Mai</option>
+              <option value="06">Jun</option>
+              <option value="07">Jul</option>
+              <option value="08">Ago</option>
+              <option value="09">Set</option>
+              <option value="10">Out</option>
+              <option value="11">Nov</option>
+              <option value="12">Dez</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ano</label>
+            <select id="filter-ano" onchange="aplicarFiltroMes()">
+              <option value="">Todos</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" onclick="limparFiltros()">Limpar</button>
+        </div>
+
+        <div id="saidas-resumo" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;"></div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Item</th>
+            <th>Tamanho</th>
+            <th>Entregue</th>
+            <th>Devolução</th>
+            <th>Valor (R$)</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="saidas-body">
+          <tr><td colspan="7" class="empty-td"><div class="empty"><div class="empty-icon">📦</div><p>Nenhuma saída registrada ainda.</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="page" id="page-financeiro">
+    <div class="page-header">
+      <div>
+        <h2>Financeiro</h2>
+        <p>Resumo financeiro das vendas</p>
+      </div>
+    </div>
+
+    <div class="fin-cards">
+      <div class="fin-card receita">
+        <div class="label">Receita Bruta</div>
+        <div class="value" id="fin-bruta">R$ 0,00</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:4px;">Total entregas</div>
+      </div>
+      <div class="fin-card devolucao">
+        <div class="label">Devoluções</div>
+        <div class="value" id="fin-dev">R$ 0,00</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:4px;">Valor devolvido</div>
+      </div>
+      <div class="fin-card liquido" style="grid-column: 1 / -1;">
+        <div class="label">Receita Líquida</div>
+        <div class="value" id="fin-liquida">R$ 0,00</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:4px;">Bruta - Devoluções</div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>🗓️ Filtrar por Período</h3>
+      <div class="filter-row">
+        <div class="form-group">
+          <label>Mês</label>
+          <select id="fin-mes" onchange="renderFinanceiro()">
+            <option value="">Todos</option>
+            <option value="01">Janeiro</option>
+            <option value="02">Fevereiro</option>
+            <option value="03">Março</option>
+            <option value="04">Abril</option>
+            <option value="05">Maio</option>
+            <option value="06">Junho</option>
+            <option value="07">Julho</option>
+            <option value="08">Agosto</option>
+            <option value="09">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ano</label>
+          <select id="fin-ano" onchange="renderFinanceiro()">
+            <option value="">Todos</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>Histórico por Item</h3>
+      <div class="table-wrap" style="box-shadow:none;border:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Tamanho</th>
+              <th>Vend.</th>
+              <th>Dev.</th>
+              <th>Receita Líq.</th>
+            </tr>
+          </thead>
+          <tbody id="fin-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="modal-overlay" id="modal-item">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✨ Novo Item</h3>
+      <button class="close-btn" onclick="closeModal('modal-item')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome do Item *</label>
+          <input type="text" id="item-nome" placeholder="Ex: Biquíni Tropical">
+        </div>
+      </div>
+      <div class="form-row cols-3">
+        <div class="form-group">
+          <label>Tamanho *</label>
+          <select id="item-tamanho">
+            <option value="">Selec.</option>
+            <option>PP</option>
+            <option>P</option>
+            <option>M</option>
+            <option>G</option>
+            <option>GG</option>
+            <option>Único</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Qtd *</label>
+          <input type="number" id="item-qtd" placeholder="0" min="0">
+        </div>
+        <div class="form-group full-mobile">
+          <label>Preço Unitário</label>
+          <input type="text" inputmode="decimal" id="item-preco" placeholder="0,00">
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div class="form-group">
+          <label>Cor</label>
+          <input type="text" id="item-cor" placeholder="Ex: Rosa">
+        </div>
+        <div class="form-group">
+          <label>Cód/SKU</label>
+          <input type="text" id="item-sku" placeholder="Ex: BIQ-01">
+        </div>
+      </div>
+      <input type="hidden" id="item-edit-id">
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="salvarItem(false)">💾 Salvar e Fechar</button>
+      <button type="button" class="btn" onclick="salvarItem(true)">➕ Salvar e Novo</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-saida">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📦 Registrar Saída</h3>
+      <button class="close-btn" onclick="closeModal('modal-saida')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Data *</label>
+          <input type="date" id="saida-data">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Item *</label>
+          <select id="saida-item" onchange="autoPreco()">
+            <option value="">Selecione o item</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row cols-3">
+        <div class="form-group">
+          <label>Entregue *</label>
+          <input type="number" id="saida-qtd" placeholder="1" min="1" value="1">
+        </div>
+        <div class="form-group">
+          <label>Devolução</label>
+          <input type="number" id="saida-dev" placeholder="0" min="0" value="0">
+        </div>
+        <div class="form-group full-mobile">
+          <label>Valor Unitário</label>
+          <input type="text" inputmode="decimal" id="saida-valor" placeholder="0,00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nº Pedido Shopee</label>
+          <input type="text" id="saida-pedido" placeholder="Ex: 250220XXXXX">
+        </div>
+      </div>
+      <input type="hidden" id="saida-edit-id">
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="closeModal('modal-saida')">Cancelar</button>
+      <button type="button" class="btn" onclick="salvarSaida()">💾 Registrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// TELA DE BLOQUEIO (SENHA)
+// ==========================================
+const SENHA_CORRETA = "123456";
+let senhaAtual = "";
+
+function initLockScreen() {
+  const isUnlocked = sessionStorage.getItem('atelie_unlocked');
+  const lockScreen = document.getElementById('lock-screen');
+  if (isUnlocked === 'true') {
+    lockScreen.style.display = 'none';
+  }
+}
+
+function updateDots() {
+  const dots = document.querySelectorAll('#pin-dots .dot');
+  dots.forEach((dot, index) => {
+    if (index < senhaAtual.length) {
+      dot.classList.add('filled');
+    } else {
+      dot.classList.remove('filled');
+    }
+  });
+}
+
+// BUGFIX: Integração do input oculto com o teclado virtual e nativo do celular
+const hiddenPin = document.getElementById('hidden-pin');
+hiddenPin.addEventListener('input', function(e) {
+  // Pega apenas números
+  senhaAtual = e.target.value.replace(/\D/g, '').substring(0, 6);
+  e.target.value = senhaAtual; 
+  updateDots();
+  if (senhaAtual.length === 6) {
+    setTimeout(checkPin, 150);
+  }
+});
+
+function addPin(numStr) {
+  if (senhaAtual.length < 6) {
+    senhaAtual += numStr;
+    hiddenPin.value = senhaAtual; // sincroniza
+    updateDots();
+    
+    if (senhaAtual.length === 6) {
+      setTimeout(checkPin, 150); 
+    }
+  }
+}
+
+function removePin() {
+  senhaAtual = senhaAtual.slice(0, -1);
+  hiddenPin.value = senhaAtual; // sincroniza
+  updateDots();
+}
+
+function checkPin() {
+  const lockScreen = document.getElementById('lock-screen');
+  const dotsContainer = document.getElementById('pin-dots');
+
+  if (senhaAtual === SENHA_CORRETA) {
+    sessionStorage.setItem('atelie_unlocked', 'true');
+    lockScreen.classList.add('unlocked');
+    hiddenPin.blur(); // Fecha o teclado do celular
+    setTimeout(() => { lockScreen.style.display = 'none'; }, 500);
+  } else {
+    dotsContainer.classList.add('error-shake');
+    setTimeout(() => {
+      dotsContainer.classList.remove('error-shake');
+      senhaAtual = "";
+      hiddenPin.value = "";
+      updateDots();
+    }, 400);
+  }
+}
+
+// Suporte ao teclado físico (computador)
+document.addEventListener('keydown', function(e) {
+  const lockScreen = document.getElementById('lock-screen');
+  if (lockScreen && lockScreen.style.display !== 'none' && !lockScreen.classList.contains('unlocked')) {
+    if (e.key >= '0' && e.key <= '9') {
+      addPin(e.key);
+    } else if (e.key === 'Backspace') {
+      removePin();
+    }
+  }
+});
+
+initLockScreen();
+
+// Acordeão de Filtros
+function toggleRelatorios() {
+  const content = document.getElementById('relatorios-content');
+  const icon = document.getElementById('toggle-relatorios-icon');
+  
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    icon.style.transform = 'rotate(0deg)';
+  } else {
+    content.style.display = 'none';
+    icon.style.transform = 'rotate(-90deg)';
+  }
+}
+
+// ==========================================
+// CORE DO APLICATIVO
+// ==========================================
+
+function formatCurrency(value) {
+  return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+// BUGFIX: Função segura para ler valores de dinheiro, aceitando vírgula e ponto
+function readNumberInput(id) {
+  let val = document.getElementById(id).value;
+  if (!val) return 0;
+  val = val.replace(/[^0-9,.]/g, ''); // Limpa qualquer letra
+  val = val.replace(',', '.'); // Troca vírgula por ponto pro JS entender
+  return parseFloat(val) || 0;
+}
+
+let estoque = JSON.parse(localStorage.getItem('atelie_estoque') || '[]');
+let saidas = JSON.parse(localStorage.getItem('atelie_saidas') || '[]');
+
+function save() {
+  localStorage.setItem('atelie_estoque', JSON.stringify(estoque));
+  localStorage.setItem('atelie_saidas', JSON.stringify(saidas));
+}
+
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  
+  const page = document.getElementById('page-' + name);
+  if (page) page.classList.add('active');
+  
+  if(el) {
+    el.classList.add('active');
+  } else {
+    const navItem = document.querySelector(`.nav-item[data-target="${name}"]`);
+    if(navItem) navItem.classList.add('active');
+  }
+
+  localStorage.setItem('atelie_aba_atual', name);
+
+  if (name === 'estoque') renderEstoque();
+  if (name === 'saidas') renderSaidas();
+  if (name === 'financeiro') renderFinanceiro();
+  if (name === 'dashboard') renderDash();
+  window.scrollTo(0,0); 
+}
+
+function openModal(id) {
+  if (id === 'modal-saida') populateSaidaSelect();
+  document.getElementById(id).classList.add('open');
+  // BUGFIX: overflow hidden removido para evitar travamento de teclado no iOS
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'modal-item') resetItemForm();
+  if (id === 'modal-saida') resetSaidaForm();
+}
+
+function salvarItem(manterAberto = false) {
+  const nome = document.getElementById('item-nome').value.trim();
+  const tamanho = document.getElementById('item-tamanho').value;
+  const qtd = parseInt(document.getElementById('item-qtd').value) || 0;
+  const preco = readNumberInput('item-preco');
+  const cor = document.getElementById('item-cor').value.trim();
+  const sku = document.getElementById('item-sku').value.trim();
+  const editId = document.getElementById('item-edit-id').value;
+
+  if (!nome || !tamanho) { alert('Preencha Nome e Tamanho!'); return; }
+
+  if (editId) {
+    const idx = estoque.findIndex(i => i.id == editId);
+    if (idx > -1) estoque[idx] = { ...estoque[idx], nome, tamanho, qtd, preco, cor, sku };
+  } else {
+    estoque.push({ id: Date.now(), nome, tamanho, qtd, preco, cor, sku });
+  }
+  
+  save();
+  renderEstoque();
+  renderDash();
+  
+  if (manterAberto) {
+    resetItemForm();
+    document.getElementById('item-nome').focus(); 
+    document.querySelector('#modal-item .modal-body').scrollTo(0,0);
+  } else {
+    closeModal('modal-item');
+  }
+}
+
+function renderEstoque() {
+  const tbody = document.getElementById('estoque-body');
+  if (!estoque.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-td"><div class="empty"><div class="empty-icon">👙</div><p>Nenhum item cadastrado ainda.</p></div></td></tr>';
+    return;
+  }
+  const sizeBadge = { PP:'badge-pp', P:'badge-p', M:'badge-m', G:'badge-g', GG:'badge-gg', Único:'badge-u' };
+  
+  tbody.innerHTML = estoque.map(i => `
+    <tr>
+      <td data-label="Item"><strong>${i.nome}</strong>${i.cor ? `<br><small style="color:var(--gray);font-weight:normal">${i.cor}</small>` : ''}${i.sku ? `<br><small style="color:var(--gray);font-weight:normal">${i.sku}</small>` : ''}</td>
+      <td data-label="Tamanho"><span class="badge ${sizeBadge[i.tamanho]||'badge-u'}">${i.tamanho}</span></td>
+      <td data-label="Quantidade"><span style="font-weight:700;color:${i.qtd<=3?'#e63946':'var(--green)'}">${i.qtd}</span>${i.qtd<=3?'<span style="font-size:11px;color:#e63946;margin-left:5px;">⚠️ Baixo</span>':''}</td>
+      <td data-label="Preço">${i.preco ? formatCurrency(i.preco) : formatCurrency(0)}</td>
+      <td data-label="Ações">
+        <button type="button" class="btn btn-sm btn-outline" onclick="editItem(${i.id})">✏️ Editar</button>
+        <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem(${i.id})">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function editItem(id) {
+  const i = estoque.find(x => x.id == id);
+  if (!i) return;
+  document.getElementById('item-nome').value = i.nome;
+  document.getElementById('item-tamanho').value = i.tamanho;
+  document.getElementById('item-qtd').value = i.qtd;
+  
+  // BUGFIX: Devolve o valor formatado com vírgula para edição
+  document.getElementById('item-preco').value = i.preco ? i.preco.toFixed(2).replace('.', ',') : '';
+  
+  document.getElementById('item-cor').value = i.cor || '';
+  document.getElementById('item-sku').value = i.sku || '';
+  document.getElementById('item-edit-id').value = i.id;
+  openModal('modal-item');
+}
+
+function deleteItem(id) {
+  const temSaida = saidas.some(s => s.itemId == id);
+  if (temSaida) {
+    alert('Ação bloqueada: Este item possui histórico de vendas. Exclua a saída primeiro.');
+    return;
+  }
+  if (!confirm('Tem certeza que deseja deletar este item?')) return;
+  estoque = estoque.filter(i => i.id != id);
+  save(); renderEstoque(); renderDash();
+}
+
+function resetItemForm() {
+  ['item-nome','item-tamanho','item-qtd','item-preco','item-cor','item-sku','item-edit-id'].forEach(id => document.getElementById(id).value = '');
+}
+
+function populateSaidaSelect() {
+  const sel = document.getElementById('saida-item');
+  sel.innerHTML = '<option value="">Selecione o item</option>' +
+    estoque.map(i => `<option value="${i.id}" data-preco="${i.preco}">${i.nome} - ${i.tamanho} (Estq: ${i.qtd})</option>`).join('');
+}
+
+function autoPreco() {
+  const sel = document.getElementById('saida-item');
+  const opt = sel.options[sel.selectedIndex];
+  if (opt && opt.dataset.preco) {
+    const preco = parseFloat(opt.dataset.preco);
+    document.getElementById('saida-valor').value = preco ? preco.toFixed(2).replace('.', ',') : '';
+  }
+}
+
+function salvarSaida() {
+  const data = document.getElementById('saida-data').value;
+  const itemId = document.getElementById('saida-item').value;
+  const qtd = parseInt(document.getElementById('saida-qtd').value) || 1;
+  const dev = parseInt(document.getElementById('saida-dev').value) || 0;
+  const valor = readNumberInput('saida-valor');
+  const pedido = document.getElementById('saida-pedido').value.trim();
+  const editId = document.getElementById('saida-edit-id').value;
+
+  if (!data || !itemId) { alert('Atenção: Preencha Data e Item!'); return; }
+  if (dev > qtd) { alert('Atenção: A devolução não pode ser maior que a quantidade entregue.'); return; }
+
+  const item = estoque.find(i => i.id == itemId);
+  if (!item) return;
+
+  const deducaoPretendida = qtd - dev;
+  let estoqueDisponivel = item.qtd;
+
+  if (editId) {
+    const oldSaida = saidas.find(s => s.id == editId);
+    if (oldSaida && oldSaida.itemId == itemId) {
+      estoqueDisponivel += (oldSaida.qtd - oldSaida.dev);
+    }
+  }
+
+  if (deducaoPretendida > estoqueDisponivel) {
+    alert(`Atenção: Estoque insuficiente! Você tem apenas ${estoqueDisponivel} unidade(s) disponíveis.`);
+    return;
+  }
+
+  if (editId) {
+    const idx = saidas.findIndex(s => s.id == editId);
+    if (idx > -1) {
+      const oldSaida = saidas[idx];
+      const oldItem = estoque.find(i => i.id == oldSaida.itemId);
+      if (oldItem) oldItem.qtd += (oldSaida.qtd - oldSaida.dev);
+      if (item) item.qtd = Math.max(0, item.qtd - deducaoPretendida);
+      saidas[idx] = { ...saidas[idx], data, itemId, itemNome: item?.nome, itemTamanho: item?.tamanho, qtd, dev, valor, pedido };
+    }
+  } else {
+    saidas.push({ id: Date.now(), data, itemId, itemNome: item?.nome, itemTamanho: item?.tamanho, qtd, dev, valor, pedido });
+    if (item) { item.qtd = Math.max(0, item.qtd - deducaoPretendida); }
+  }
+  
+  save(); renderSaidas(); renderDash(); closeModal('modal-saida');
+}
+
+function editSaida(id) {
+  const s = saidas.find(x => x.id == id);
+  if (!s) return;
+  populateSaidaSelect();
+  document.getElementById('saida-data').value = s.data;
+  document.getElementById('saida-item').value = s.itemId;
+  document.getElementById('saida-qtd').value = s.qtd;
+  document.getElementById('saida-dev').value = s.dev;
+  
+  // BUGFIX: Valor volta formatado para edição
+  document.getElementById('saida-valor').value = s.valor ? s.valor.toFixed(2).replace('.', ',') : '';
+  
+  document.getElementById('saida-pedido').value = s.pedido || '';
+  document.getElementById('saida-edit-id').value = s.id;
+  openModal('modal-saida');
+}
+
+function getFiltredSaidas() {
+  let list = [...saidas];
+  const ini = document.getElementById('filter-inicio')?.value;
+  const fim = document.getElementById('filter-fim')?.value;
+  if (ini) list = list.filter(s => s.data >= ini);
+  if (fim) list = list.filter(s => s.data <= fim);
+  return list.sort((a,b) => b.data.localeCompare(a.data));
+}
+
+function renderSaidas() {
+  const tbody = document.getElementById('saidas-body');
