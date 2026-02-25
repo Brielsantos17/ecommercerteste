@@ -23,6 +23,12 @@
     --shadow: 0 4px 20px rgba(45,106,79,0.06);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden; /* Trava scroll horizontal indesejado */
+  }
+
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--off-white);
@@ -146,7 +152,7 @@
   .form-group input, .form-group select {
     width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 16px; 
     font-family: 'DM Sans', sans-serif; background: var(--white); color: #1a2e23;
-    transition: all 0.2s; outline: none; min-height: 48px; appearance: none; 
+    transition: all 0.2s; outline: none; min-height: 48px; appearance: none; box-sizing: border-box;
   }
   .form-group input:focus, .form-group select:focus { border-color: var(--green-light); box-shadow: 0 0 0 4px rgba(64,145,108,0.1); }
 
@@ -168,7 +174,7 @@
   .modal-footer { padding: 20px 32px; border-top: 1px solid var(--border); background: var(--off-white); display: flex; gap: 12px; justify-content: flex-end; }
 
   /* SECTION BLOCKS */
-  .section-block { background: var(--white); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); padding: 28px; margin-bottom: 24px; }
+  .section-block { background: var(--white); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); padding: 28px; margin-bottom: 24px; width: 100%; box-sizing: border-box;}
   .section-block h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--green); margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
 
   /* FILTERS & EMPTY */
@@ -193,14 +199,14 @@
   .collapsible-icon { color: var(--green); font-size: 16px; font-weight: bold; transition: transform 0.3s ease; }
   .collapsible-content { display: block; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); animation: fadeIn 0.3s ease; }
 
-  /* MENSAGEM DE SINCRONIZAÇÃO NUvem */
+  /* MENSAGEM DE SINCRONIZAÇÃO NUVEM */
   #sync-status {
     position: fixed; top: 10px; right: 20px; background: rgba(0,0,0,0.8); color: white;
     padding: 6px 12px; border-radius: 20px; font-size: 12px; z-index: 9999; display: none;
   }
 
   /* =========================================================
-     🔥 MOBILE ERP UI / UX PERFECT
+     🔥 MOBILE ERP UI / UX PERFECT (REFINADO PARA VALORES ALTOS)
      ========================================================= */
   @media (max-width: 768px) {
     .lock-header h1 { font-size: 28px; }
@@ -208,58 +214,86 @@
     .keypad { gap: 12px 20px; }
     .keypad-btn { width: 68px; height: 68px; font-size: 26px; }
 
+    /* Bottom Nav */
     .sidebar {
-      width: 100%; height: 72px; min-height: auto; flex-direction: row; top: auto; bottom: 0;
+      width: 100vw; height: 72px; min-height: auto; flex-direction: row; top: auto; bottom: 0;
       box-shadow: 0 -4px 20px rgba(0,0,0,0.1); padding-bottom: env(safe-area-inset-bottom);
     }
     .logo, .sidebar-footer { display: none; }
-    nav { padding: 0; display: flex; flex-direction: row; width: 100%; justify-content: space-around; align-items: center; }
-    .nav-item { flex-direction: column; gap: 4px; padding: 8px 0; flex: 1; justify-content: center; border-left: none; border-top: 3px solid transparent; }
+    nav { padding: 0 8px; display: flex; flex-direction: row; width: 100%; justify-content: space-between; align-items: center; }
+    .nav-item { flex-direction: column; gap: 4px; padding: 8px 4px; flex: 1; justify-content: center; border-left: none; border-top: 3px solid transparent; }
     .nav-item.active { border-left: none; border-top-color: var(--green-mid); background: transparent; }
     .nav-item span:not(.nav-icon) { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
     .nav-icon { font-size: 22px; }
 
-    .main { margin-left: 0; padding: 24px 16px 100px 16px; }
+    /* Fix Main Container Size */
+    .main { margin-left: 0; padding: 20px 16px 100px 16px; width: 100vw; box-sizing: border-box; }
     .page-header { flex-direction: column; align-items: stretch; gap: 16px; margin-bottom: 24px; }
     .page-header h2 { font-size: 26px; }
     .page-header .btn { width: 100%; justify-content: center; } 
 
+    /* Cards - 2 colunas para Estoque, mas letras ajustadas */
     .cards-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .card { padding: 16px; border-radius: 12px; }
-    .card-value { font-size: 19px; letter-spacing: -0.5px; } 
-    .fin-cards { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .fin-card { padding: 16px; border-radius: 12px; }
-    .fin-card .value { font-size: 19px; letter-spacing: -0.5px; } 
+    .card { padding: 16px 12px; border-radius: 12px; }
+    .card-value { font-size: 20px; letter-spacing: -0.5px; word-break: break-word; } 
     
+    /* 🔥 FINANCE CARDS EM 1 COLUNA (Acomoda valores gigantes!) */
+    .fin-cards { display: flex; flex-direction: column; gap: 12px; }
+    .fin-card { padding: 20px 16px; border-radius: 12px; }
+    .fin-card .value { font-size: 28px; letter-spacing: -0.5px; } 
+    
+    /* Fix Filtros em 1 Coluna */
     .section-block { padding: 16px; border-radius: 12px; }
-    .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .filter-row .btn { grid-column: 1 / -1; margin-top: 4px; }
+    .filter-row { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+    .filter-row .form-group { width: 100%; min-width: 100%; margin: 0; }
+    .filter-row .btn { margin-top: 4px; }
 
+    /* Modais - Full Width */
     .modal-overlay { align-items: flex-end; padding: 0; }
-    .modal { border-radius: 24px 24px 0 0; max-height: 85vh; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-    .modal-header { padding: 20px; }
+    .modal { border-radius: 24px 24px 0 0; max-height: 85vh; width: 100vw; max-width: 100vw; padding: 0; margin: 0; box-sizing: border-box; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    .modal-header { padding: 20px 24px; }
     .modal-header h3 { font-size: 20px; }
-    .modal-body { padding: 20px; }
-    .modal-footer { padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); flex-direction: column-reverse; gap: 12px; }
+    .modal-body { padding: 20px 24px; }
+    .modal-footer { padding: 16px 24px calc(16px + env(safe-area-inset-bottom)); flex-direction: column-reverse; gap: 12px; }
     .modal-footer .btn { width: 100%; margin: 0; }
-    .form-row { gap: 16px; margin-bottom: 16px; }
-    .form-row.cols-3 { grid-template-columns: 1fr 1fr; }
-    .form-row.cols-3 .full-mobile { grid-column: 1 / -1; } 
-    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    
+    /* Formulários Modal 1 Coluna */
+    .form-row { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+    .form-row.cols-3, .form-row.cols-2 { display: flex; flex-direction: column; }
+    .form-group full-mobile { width: 100%; }
 
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-    .table-wrap { background: transparent; border: none; box-shadow: none; overflow: visible; }
+    /* 🔥 TABELAS RESPONSIVAS (Estilo App List View) */
+    .table-wrap { background: transparent; border: none; box-shadow: none; overflow: visible; padding: 0; }
     table, thead, tbody, th, td, tr { display: block; width: 100%; min-width: auto; }
-    thead tr { position: absolute; top: -9999px; left: -9999px; } 
-    tr { background: var(--white); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-    td { border: none; padding: 6px 0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; text-align: right; }
-    td::before { content: attr(data-label); font-weight: 700; color: var(--gray); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; text-align: left; margin-right: 12px; }
-    td:last-child { justify-content: flex-end; gap: 12px; margin-top: 12px; padding-top: 16px; border-top: 1px solid var(--border); }
-    td:last-child::before { display: none; } 
-    td .btn-sm { min-height: 40px; padding: 0 20px; font-size: 14px; } 
-    td.empty-td { display: flex; justify-content: center; align-items: center; border: none; padding: 32px 16px; box-shadow: none; }
-    td.empty-td::before { display: none; }
+    thead tr { display: none; } 
+    tr { 
+      background: var(--white); border: 1px solid var(--border); border-radius: 14px; 
+      margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); overflow: hidden; 
+    }
+    td { 
+      border: none; padding: 12px 16px; display: flex; justify-content: space-between; 
+      align-items: center; font-size: 14px; text-align: right; border-bottom: 1px solid var(--border); gap: 12px;
+    }
+    td > div, td > span, td > strong { word-break: break-word; text-align: right; }
+    td::before { 
+      content: attr(data-label); font-weight: 700; color: var(--gray); text-transform: uppercase; 
+      font-size: 11px; letter-spacing: 0.5px; text-align: left; flex-shrink: 0;
+    }
+    
+    /* Botões de Ação na Lista */
+    td[data-label="Ações"], td:last-child { 
+      justify-content: space-between; border-bottom: none; background: var(--off-white); gap: 8px;
+    }
+    td[data-label="Ações"]::before, td:last-child::before { display: none; } 
+    td .btn-sm { flex: 1; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 14px; padding: 0;} 
+    
+    td.empty-td { 
+      display: flex !important; flex-direction: column; justify-content: center; align-items: center; 
+      border: none !important; padding: 40px 16px !important; background: transparent !important;
+    }
+    td.empty-td::before { display: none !important; }
   }
 </style>
 </head>
@@ -393,7 +427,7 @@
           </tr>
         </thead>
         <tbody id="estoque-body">
-          <tr><td colspan="5" class="empty-td"><div class="empty"><div class="empty-icon">👙</div><p>Nenhum item cadastrado ainda.</p></div></td></tr>
+          <tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">👙</div><p>Nenhum item cadastrado ainda.</p></div></td></tr>
         </tbody>
       </table>
     </div>
@@ -472,7 +506,7 @@
           </tr>
         </thead>
         <tbody id="saidas-body">
-          <tr><td colspan="7" class="empty-td"><div class="empty"><div class="empty-icon">📦</div><p>Nenhuma saída registrada ainda.</p></div></td></tr>
+          <tr><td colspan="7" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">📦</div><p>Nenhuma saída registrada ainda.</p></div></td></tr>
         </tbody>
       </table>
     </div>
@@ -666,9 +700,7 @@
 // ==========================================
 // CONFIGURAÇÃO DO FIREBASE (NUVEM)
 // ==========================================
-// 🔴 ATENÇÃO: COLE AQUI AS CHAVES DO SEU PROJETO FIREBASE 🔴
 const firebaseConfig = {
-
   apiKey: "AIzaSyAc6FFJ7Nq8f9ZrT2TofAYwRRFX-_-TyUY",
   authDomain: "atelie03.firebaseapp.com",
   projectId: "atelie03",
@@ -678,9 +710,9 @@ const firebaseConfig = {
   measurementId: "G-9FMVXGHBVJ"
 };
 
-// Inicializa o Firebase (Só remove o comentário quando colocar as chaves!)
-// firebase.initializeApp(firebaseConfig);
-// const db = firebase.firestore();
+// Inicializa o Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 // ==========================================
 // VARIÁVEIS DE DADOS
@@ -793,7 +825,6 @@ initLockScreen();
 async function loadData() {
   const syncStatus = document.getElementById('sync-status');
   
-  // Tenta puxar do Firebase PRIMEIRO se estiver configurado
   if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
     syncStatus.style.display = 'block';
     syncStatus.innerText = '☁️ Sincronizando...';
@@ -810,11 +841,9 @@ async function loadData() {
       loadLocalFallback();
     }
   } else {
-    // Se não colocou a chave ainda, usa o local
     loadLocalFallback();
   }
 
-  // Renderiza a tela após carregar os dados
   renderDash();
   const abaSalva = localStorage.getItem('atelie_aba_atual') || 'dashboard';
   showPage(abaSalva);
@@ -826,11 +855,9 @@ function loadLocalFallback() {
 }
 
 function save() {
-  // Salva no LocalStorage como segurança
   localStorage.setItem('atelie_estoque', JSON.stringify(estoque));
   localStorage.setItem('atelie_saidas', JSON.stringify(saidas));
 
-  // Tenta salvar na Nuvem se Firebase estiver configurado
   if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
     const syncStatus = document.getElementById('sync-status');
     syncStatus.style.display = 'block';
@@ -948,7 +975,7 @@ function salvarItem(manterAberto = false) {
 function renderEstoque() {
   const tbody = document.getElementById('estoque-body');
   if (!estoque.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-td"><div class="empty"><div class="empty-icon">👙</div><p>Nenhum item cadastrado ainda.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">👙</div><p>Nenhum item cadastrado ainda.</p></div></td></tr>';
     return;
   }
   const sizeBadge = { PP:'badge-pp', P:'badge-p', M:'badge-m', G:'badge-g', GG:'badge-gg', Único:'badge-u' };
@@ -1084,7 +1111,7 @@ function renderSaidas() {
   const tbody = document.getElementById('saidas-body');
   const list = getFiltredSaidas();
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-td"><div class="empty"><div class="empty-icon">📦</div><p>Nenhuma saída para este filtro.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">📦</div><p>Nenhuma saída registrada ainda.</p></div></td></tr>';
     document.getElementById('saidas-resumo').innerHTML = '';
     return;
   }
@@ -1208,7 +1235,7 @@ function renderFinanceiro() {
   const tbody = document.getElementById('fin-body');
   const rows = Object.values(map);
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-td"><div class="empty"><p>Nenhum dado para o período.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><p>Nenhum dado para o período.</p></div></td></tr>';
   } else {
     tbody.innerHTML = rows.map(r => `
       <tr>
@@ -1256,6 +1283,11 @@ function formatDate(d) {
   const [y,m,day] = d.split('-');
   return `${day}/${m}/${y}`;
 }
+
+// INIT 
+renderDash(); 
+const abaSalva = localStorage.getItem('atelie_aba_atual') || 'dashboard';
+showPage(abaSalva);
 
 </script>
 </body>
