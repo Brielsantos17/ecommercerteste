@@ -26,27 +26,18 @@
     min-height: 100vh;
     display: flex;
     -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
   }
 
   /* =========================================================
-     🔒 TELA DE BLOQUEIO (ESTILO iPHONE)
+     🔒 TELA DE BLOQUEIO (1 LOGIN POR DIA)
      ========================================================= */
   #lock-screen {
-    position: fixed;
-    inset: 0;
-    background: var(--off-white);
-    z-index: 99999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: fixed; inset: 0; background: var(--off-white); z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
   }
-  #lock-screen.unlocked {
-    transform: translateY(-100%);
-    opacity: 0;
-    pointer-events: none;
-  }
+  #lock-screen.unlocked { transform: translateY(-100%); opacity: 0; pointer-events: none; }
   .lock-header { text-align: center; margin-bottom: 40px; }
   .lock-header h1 { font-family: 'Playfair Display', serif; font-size: 34px; color: var(--green); margin-bottom: 8px; }
   .lock-header p { font-size: 15px; color: var(--gray); font-weight: 500; }
@@ -57,8 +48,7 @@
     background: rgba(45,106,79,0.05); /* Área clicável para abrir teclado do celular */
   }
   .pin-dots .dot {
-    width: 14px; height: 14px; border-radius: 50%;
-    border: 1.5px solid var(--green); transition: all 0.15s;
+    width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--green); transition: all 0.15s;
   }
   .pin-dots .dot.filled { background: var(--green); }
   .pin-dots.error-shake { animation: shake 0.4s; }
@@ -71,38 +61,26 @@
 
   .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 24px; }
   .keypad-btn {
-    width: 72px; height: 72px; border-radius: 50%; border: none;
-    background: rgba(45,106,79,0.06); font-size: 28px; font-weight: 500;
-    font-family: 'DM Sans', sans-serif; color: var(--green);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: background 0.1s;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    touch-action: manipulation;
+    width: 72px; height: 72px; border-radius: 50%; border: none; background: rgba(45,106,79,0.06);
+    font-size: 28px; font-weight: 500; font-family: 'DM Sans', sans-serif; color: var(--green);
+    display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.1s;
+    -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation;
   }
   .keypad-btn:active { background: rgba(45,106,79,0.15); }
   .keypad-btn.action-btn { background: transparent; font-size: 24px; color: var(--gray); }
 
   /* SIDEBAR (Desktop) */
   .sidebar {
-    width: 240px;
-    background: var(--green);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    left: 0; top: 0; bottom: 0;
-    z-index: 100;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.05);
+    width: 240px; background: var(--green); min-height: 100vh; display: flex; flex-direction: column;
+    position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; box-shadow: 4px 0 24px rgba(0,0,0,0.05);
   }
   .logo { padding: 32px 24px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
   .logo h1 { font-family: 'Playfair Display', serif; color: var(--white); font-size: 24px; font-weight: 700; }
   .logo span { display: block; color: var(--green-mid); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
   nav { padding: 24px 0; flex: 1; }
   .nav-item {
-    display: flex; align-items: center; gap: 14px; padding: 14px 24px;
-    color: rgba(255,255,255,0.7); cursor: pointer; font-size: 15px; font-weight: 500;
-    transition: all 0.2s ease; border-left: 4px solid transparent;
+    display: flex; align-items: center; gap: 14px; padding: 14px 24px; color: rgba(255,255,255,0.7);
+    cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s ease; border-left: 4px solid transparent;
   }
   .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
   .nav-item.active { background: rgba(255,255,255,0.1); color: var(--white); border-left-color: var(--green-mid); }
@@ -164,8 +142,7 @@
   .form-row.cols-2 { grid-template-columns: repeat(2, 1fr); }
   .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
   .form-group input, .form-group select {
-    width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 10px;
-    font-size: 16px; 
+    width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 16px; 
     font-family: 'DM Sans', sans-serif; background: var(--white); color: #1a2e23;
     transition: all 0.2s; outline: none; min-height: 48px; appearance: none; 
   }
@@ -209,16 +186,10 @@
   .fin-card.liquido .value { color: #1a2e23; }
 
   /* COLLAPSIBLE AREA (ACORDEÃO) */
-  .collapsible-header {
-    display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-    -webkit-tap-highlight-color: transparent; padding: 8px 0;
-  }
+  .collapsible-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; padding: 8px 0; }
   .collapsible-header h3 { margin-bottom: 0; padding-bottom: 0; border: none; }
   .collapsible-icon { color: var(--green); font-size: 16px; font-weight: bold; transition: transform 0.3s ease; }
-  .collapsible-content {
-    display: block; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);
-    animation: fadeIn 0.3s ease;
-  }
+  .collapsible-content { display: block; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); animation: fadeIn 0.3s ease; }
 
   /* =========================================================
      🔥 MOBILE ERP UI / UX PERFECT
@@ -237,8 +208,8 @@
     nav { padding: 0; display: flex; flex-direction: row; width: 100%; justify-content: space-around; align-items: center; }
     .nav-item { flex-direction: column; gap: 4px; padding: 8px 0; flex: 1; justify-content: center; border-left: none; border-top: 3px solid transparent; }
     .nav-item.active { border-left: none; border-top-color: var(--green-mid); background: transparent; }
-    .nav-item span:not(.nav-icon) { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; }
-    .nav-icon { font-size: 22px; }
+    .nav-item span:not(.nav-icon) { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+    .nav-icon { font-size: 20px; }
 
     .main { margin-left: 0; padding: 24px 16px 100px 16px; }
     .page-header { flex-direction: column; align-items: stretch; gap: 16px; margin-bottom: 24px; }
@@ -256,7 +227,7 @@
     .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .filter-row .btn { grid-column: 1 / -1; margin-top: 4px; }
 
-    /* Modal otimizado sem travar o scroll do body para não bugar o teclado */
+    /* Modal otimizado */
     .modal-overlay { align-items: flex-end; padding: 0; }
     .modal { border-radius: 24px 24px 0 0; max-height: 85vh; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
     .modal-header { padding: 20px; }
@@ -271,6 +242,7 @@
 
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
+    /* Tables to Cards */
     .table-wrap { background: transparent; border: none; box-shadow: none; overflow: visible; }
     table, thead, tbody, th, td, tr { display: block; width: 100%; min-width: auto; }
     thead tr { position: absolute; top: -9999px; left: -9999px; } 
@@ -341,6 +313,10 @@
     <div class="nav-item" onclick="showPage('financeiro', this)" data-target="financeiro">
       <span class="nav-icon">💰</span>
       <span>Finanças</span>
+    </div>
+    <div class="nav-item" onclick="forceLock()" style="margin-top: 20px; color: #e63946;">
+      <span class="nav-icon">🔒</span>
+      <span>Bloquear</span>
     </div>
   </nav>
   <div class="sidebar-footer">
@@ -680,16 +656,23 @@
 
 <script>
 // ==========================================
-// TELA DE BLOQUEIO (SENHA)
+// TELA DE BLOQUEIO (LOGICA 1 VEZ POR DIA)
 // ==========================================
 const SENHA_CORRETA = "123456";
 let senhaAtual = "";
 
 function initLockScreen() {
-  const isUnlocked = sessionStorage.getItem('atelie_unlocked');
   const lockScreen = document.getElementById('lock-screen');
-  if (isUnlocked === 'true') {
+  const lastLoginDate = localStorage.getItem('atelie_last_login_date');
+  const today = new Date().toDateString(); // Retorna formato como "Tue Feb 24 2026"
+
+  // Se a última data de login for a mesma de hoje, não mostra a tela
+  if (lastLoginDate === today) {
     lockScreen.style.display = 'none';
+  } else {
+    // Se for um novo dia, garante que a tela está bloqueada
+    lockScreen.style.display = 'flex';
+    lockScreen.classList.remove('unlocked');
   }
 }
 
@@ -704,33 +687,26 @@ function updateDots() {
   });
 }
 
-// BUGFIX: Integração do input oculto com o teclado virtual e nativo do celular
 const hiddenPin = document.getElementById('hidden-pin');
 hiddenPin.addEventListener('input', function(e) {
-  // Pega apenas números
   senhaAtual = e.target.value.replace(/\D/g, '').substring(0, 6);
   e.target.value = senhaAtual; 
   updateDots();
-  if (senhaAtual.length === 6) {
-    setTimeout(checkPin, 150);
-  }
+  if (senhaAtual.length === 6) { setTimeout(checkPin, 150); }
 });
 
 function addPin(numStr) {
   if (senhaAtual.length < 6) {
     senhaAtual += numStr;
-    hiddenPin.value = senhaAtual; // sincroniza
+    hiddenPin.value = senhaAtual; 
     updateDots();
-    
-    if (senhaAtual.length === 6) {
-      setTimeout(checkPin, 150); 
-    }
+    if (senhaAtual.length === 6) { setTimeout(checkPin, 150); }
   }
 }
 
 function removePin() {
   senhaAtual = senhaAtual.slice(0, -1);
-  hiddenPin.value = senhaAtual; // sincroniza
+  hiddenPin.value = senhaAtual;
   updateDots();
 }
 
@@ -739,9 +715,10 @@ function checkPin() {
   const dotsContainer = document.getElementById('pin-dots');
 
   if (senhaAtual === SENHA_CORRETA) {
-    sessionStorage.setItem('atelie_unlocked', 'true');
+    // Se a senha estiver correta, grava a data de hoje para não pedir de novo no mesmo dia
+    localStorage.setItem('atelie_last_login_date', new Date().toDateString());
     lockScreen.classList.add('unlocked');
-    hiddenPin.blur(); // Fecha o teclado do celular
+    hiddenPin.blur(); 
     setTimeout(() => { lockScreen.style.display = 'none'; }, 500);
   } else {
     dotsContainer.classList.add('error-shake');
@@ -754,7 +731,19 @@ function checkPin() {
   }
 }
 
-// Suporte ao teclado físico (computador)
+// Botão extra no menu para forçar o bloqueio
+function forceLock() {
+  localStorage.removeItem('atelie_last_login_date');
+  senhaAtual = "";
+  hiddenPin.value = "";
+  updateDots();
+  const lockScreen = document.getElementById('lock-screen');
+  lockScreen.style.display = 'flex';
+  setTimeout(() => { lockScreen.classList.remove('unlocked'); }, 10);
+  // Muda de tela por segurança
+  showPage('dashboard', document.querySelector('.nav-item[data-target="dashboard"]')); 
+}
+
 document.addEventListener('keydown', function(e) {
   const lockScreen = document.getElementById('lock-screen');
   if (lockScreen && lockScreen.style.display !== 'none' && !lockScreen.classList.contains('unlocked')) {
@@ -766,9 +755,12 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+// Inicializa a trava na inicialização
 initLockScreen();
 
-// Acordeão de Filtros
+// ==========================================
+// ACORDEÃO RELATÓRIOS
+// ==========================================
 function toggleRelatorios() {
   const content = document.getElementById('relatorios-content');
   const icon = document.getElementById('toggle-relatorios-icon');
@@ -790,12 +782,11 @@ function formatCurrency(value) {
   return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-// BUGFIX: Função segura para ler valores de dinheiro, aceitando vírgula e ponto
 function readNumberInput(id) {
   let val = document.getElementById(id).value;
   if (!val) return 0;
-  val = val.replace(/[^0-9,.]/g, ''); // Limpa qualquer letra
-  val = val.replace(',', '.'); // Troca vírgula por ponto pro JS entender
+  val = val.replace(/[^0-9,.]/g, ''); 
+  val = val.replace(',', '.'); 
   return parseFloat(val) || 0;
 }
 
@@ -833,7 +824,6 @@ function showPage(name, el) {
 function openModal(id) {
   if (id === 'modal-saida') populateSaidaSelect();
   document.getElementById(id).classList.add('open');
-  // BUGFIX: overflow hidden removido para evitar travamento de teclado no iOS
 }
 
 function closeModal(id) {
@@ -860,9 +850,7 @@ function salvarItem(manterAberto = false) {
     estoque.push({ id: Date.now(), nome, tamanho, qtd, preco, cor, sku });
   }
   
-  save();
-  renderEstoque();
-  renderDash();
+  save(); renderEstoque(); renderDash();
   
   if (manterAberto) {
     resetItemForm();
@@ -901,10 +889,7 @@ function editItem(id) {
   document.getElementById('item-nome').value = i.nome;
   document.getElementById('item-tamanho').value = i.tamanho;
   document.getElementById('item-qtd').value = i.qtd;
-  
-  // BUGFIX: Devolve o valor formatado com vírgula para edição
   document.getElementById('item-preco').value = i.preco ? i.preco.toFixed(2).replace('.', ',') : '';
-  
   document.getElementById('item-cor').value = i.cor || '';
   document.getElementById('item-sku').value = i.sku || '';
   document.getElementById('item-edit-id').value = i.id;
@@ -996,10 +981,7 @@ function editSaida(id) {
   document.getElementById('saida-item').value = s.itemId;
   document.getElementById('saida-qtd').value = s.qtd;
   document.getElementById('saida-dev').value = s.dev;
-  
-  // BUGFIX: Valor volta formatado para edição
   document.getElementById('saida-valor').value = s.valor ? s.valor.toFixed(2).replace('.', ',') : '';
-  
   document.getElementById('saida-pedido').value = s.pedido || '';
   document.getElementById('saida-edit-id').value = s.id;
   openModal('modal-saida');
@@ -1016,3 +998,186 @@ function getFiltredSaidas() {
 
 function renderSaidas() {
   const tbody = document.getElementById('saidas-body');
+  const list = getFiltredSaidas();
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-td"><div class="empty"><div class="empty-icon">📦</div><p>Nenhuma saída para este filtro.</p></div></td></tr>';
+    document.getElementById('saidas-resumo').innerHTML = '';
+    return;
+  }
+
+  const totalPedidos = list.reduce((s,x) => s + x.qtd, 0);
+  const totalDev = list.reduce((s,x) => s + x.dev, 0);
+
+  document.getElementById('saidas-resumo').innerHTML = `
+    <div style="background:var(--green-pale);border-radius:8px;padding:8px 12px;font-size:12px;">
+      <strong style="color:var(--green)">📦 ${list.length} registros</strong>
+    </div>
+    <div style="background:var(--green-pale);border-radius:8px;padding:8px 12px;font-size:12px;">
+      <strong style="color:var(--green)">✅ ${totalPedidos} entregues</strong>
+    </div>
+    <div style="background:#fee2e2;border-radius:8px;padding:8px 12px;font-size:12px;">
+      <strong style="color:#991b1b">↩️ ${totalDev} devs.</strong>
+    </div>
+  `;
+
+  tbody.innerHTML = list.map(s => `
+    <tr>
+      <td data-label="Data">${formatDate(s.data)}</td>
+      <td data-label="Item">${s.itemNome || '-'}</td>
+      <td data-label="Tamanho">${s.itemTamanho || '-'}</td>
+      <td data-label="Entregue" style="font-weight:700;color:var(--green)">${s.qtd}</td>
+      <td data-label="Devolução">${s.dev > 0 ? `<span class="badge badge-dev">↩️ ${s.dev}</span>` : '<span class="badge badge-ok">0</span>'}</td>
+      <td data-label="Valor">${formatCurrency(s.valor)}</td>
+      <td data-label="Ações">
+        <button type="button" class="btn btn-sm btn-outline" onclick="editSaida(${s.id})">✏️ Editar</button>
+        <button type="button" class="btn btn-sm btn-danger" onclick="deleteSaida(${s.id})">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function deleteSaida(id) {
+  if (!confirm('Deletar registro? O estoque será devolvido.')) return;
+  const s = saidas.find(x => x.id == id);
+  if (s) {
+      const item = estoque.find(i => i.id == s.itemId);
+      if (item) item.qtd += (s.qtd - s.dev);
+  }
+  saidas = saidas.filter(x => x.id != id);
+  save(); renderSaidas(); renderDash();
+}
+
+function resetSaidaForm() {
+  ['saida-data','saida-item','saida-qtd','saida-dev','saida-valor','saida-pedido','saida-edit-id'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('saida-qtd').value = 1;
+  document.getElementById('saida-dev').value = 0;
+}
+
+function limparSelectsEFiltrar() {
+  document.getElementById('filter-mes').value = '';
+  document.getElementById('filter-ano').value = '';
+  renderSaidas();
+}
+
+function aplicarFiltroMes() {
+  const mes = document.getElementById('filter-mes').value;
+  let ano = document.getElementById('filter-ano').value;
+  if (mes && !ano) {
+    ano = new Date().getFullYear().toString();
+    document.getElementById('filter-ano').value = ano;
+  }
+  if (ano) {
+    if (mes) {
+      document.getElementById('filter-inicio').value = `${ano}-${mes}-01`;
+      const lastDay = new Date(ano, mes, 0).getDate();
+      document.getElementById('filter-fim').value = `${ano}-${mes}-${lastDay}`;
+    } else {
+      document.getElementById('filter-inicio').value = `${ano}-01-01`;
+      document.getElementById('filter-fim').value = `${ano}-12-31`;
+    }
+  } else {
+    if (!mes) {
+       document.getElementById('filter-inicio').value = '';
+       document.getElementById('filter-fim').value = '';
+    }
+  }
+  renderSaidas();
+}
+
+function limparFiltros() {
+  document.getElementById('filter-inicio').value = '';
+  document.getElementById('filter-fim').value = '';
+  document.getElementById('filter-mes').value = '';
+  document.getElementById('filter-ano').value = '';
+  renderSaidas();
+}
+
+function renderFinanceiro() {
+  const mes = document.getElementById('fin-mes').value;
+  const ano = document.getElementById('fin-ano').value;
+  let list = [...saidas];
+  
+  if (mes && ano) { list = list.filter(s => s.data.startsWith(`${ano}-${mes}`)); }
+  else if (ano) { list = list.filter(s => s.data.startsWith(ano)); }
+  else if (mes) { list = list.filter(s => s.data.substring(5, 7) === mes); }
+
+  const bruta = list.reduce((s,x) => s + (x.valor * x.qtd), 0);
+  const devVal = list.reduce((s,x) => s + (x.valor * x.dev), 0);
+  const liquida = bruta - devVal;
+
+  document.getElementById('fin-bruta').textContent = formatCurrency(bruta);
+  document.getElementById('fin-dev').textContent = formatCurrency(devVal);
+  document.getElementById('fin-liquida').textContent = formatCurrency(liquida);
+
+  const map = {};
+  list.forEach(s => {
+    const key = `${s.itemId}`;
+    if (!map[key]) map[key] = { nome: s.itemNome, tam: s.itemTamanho, qtd: 0, dev: 0, val: 0 };
+    map[key].qtd += s.qtd;
+    map[key].dev += s.dev;
+    map[key].val += s.valor * (s.qtd - s.dev); 
+  });
+
+  const tbody = document.getElementById('fin-body');
+  const rows = Object.values(map);
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-td"><div class="empty"><p>Nenhum dado para o período.</p></div></td></tr>';
+  } else {
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td data-label="Item">${r.nome}</td>
+        <td data-label="Tamanho">${r.tam}</td>
+        <td data-label="Qtd Vendida" style="font-weight:700;color:var(--green)">${r.qtd}</td>
+        <td data-label="Devoluções" style="color:#e63946">${r.dev}</td>
+        <td data-label="Receita Líq." style="font-weight:700">${formatCurrency(r.val)}</td>
+      </tr>
+    `).join('');
+  }
+}
+
+function renderDash() {
+  document.getElementById('dash-total-itens').textContent = estoque.length;
+  const totalPed = saidas.reduce((s,x) => s + x.qtd, 0);
+  const totalDev = saidas.reduce((s,x) => s + x.dev, 0);
+  
+  const bruta = saidas.reduce((s,x) => s + (x.valor * x.qtd), 0);
+  const devVal = saidas.reduce((s,x) => s + (x.valor * x.dev), 0);
+  const liquida = bruta - devVal;
+
+  document.getElementById('dash-total-pedidos').textContent = totalPed;
+  document.getElementById('dash-total-dev').textContent = totalDev;
+  document.getElementById('dash-receita').textContent = formatCurrency(liquida);
+
+  const low = estoque.filter(i => i.qtd <= 3);
+  const cont = document.getElementById('dash-low-stock');
+  if (!low.length) {
+    cont.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><p>Tudo certo no estoque.</p></div>';
+  } else {
+    const sizeBadge = { PP:'badge-pp', P:'badge-p', M:'badge-m', G:'badge-g', GG:'badge-gg', Único:'badge-u' };
+    cont.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;">${low.map(i=>`
+      <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:16px;">
+        <div style="font-weight:700;color:#1a2e23;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${i.nome}">${i.nome}</div>
+        <div style="margin-top:6px"><span class="badge ${sizeBadge[i.tamanho]||'badge-u'}">${i.tamanho}</span></div>
+        <div style="margin-top:10px;font-size:13px;color:#e63946;font-weight:700">⚠️ ${i.qtd} rest.</div>
+      </div>
+    `).join('')}</div>`;
+  }
+}
+
+function formatDate(d) {
+  if (!d) return '-';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+
+// INIT 
+renderDash(); 
+const abaSalva = localStorage.getItem('atelie_aba_atual') || 'dashboard';
+showPage(abaSalva);
+
+</script>
+</body>
+</html>
