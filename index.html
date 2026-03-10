@@ -233,6 +233,13 @@
     .modal-header, .modal-footer { display: none !important; }
     .recibo-wrapper { font-size: 12px; }
   }
+  /* =========================================================
+     🖨️ CONFIGURAÇÕES DE IMPRESSÃO
+     ========================================================= */
+  @media print {
+    /* ESTA É A REGRA QUE REMOVE A URL E A DATA DO CABEÇALHO/RODAPÉ */
+    @page {
+      margin: 0;
 
   /* =========================================================
      📱 MOBILE UI
