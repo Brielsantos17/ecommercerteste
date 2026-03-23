@@ -1448,6 +1448,9 @@ function resetSaidaForm() {
 // ==========================================
 // GERADOR DE PDF REAL E SEM QUEBRA DE PÁGINA
 // ==========================================
+// ==========================================
+// GERADOR DE PDF REAL E SEM QUEBRA DE PÁGINA
+// ==========================================
 function baixarPDF() {
   const element = document.getElementById('print-area');
   const btn = document.querySelector('.btn-print');
@@ -1455,16 +1458,15 @@ function baixarPDF() {
   
   btn.innerText = "⏳ Gerando PDF...";
   
-  // Cria um clone "invisível" para garantir que o scroll do Modal e limites mobile não quebrem o PDF
-  const clone = element.cloneNode(true);
-  clone.style.width = '800px'; 
-  clone.style.padding = '40px';
-  clone.style.background = '#fff';
-  clone.style.position = 'absolute';
-  clone.style.top = '0';
-  clone.style.left = '-9999px'; 
-  document.body.appendChild(clone);
+  // Remove as travas de rolagem do modal temporariamente para o gerador conseguir ler tudo
+  const modal = document.querySelector('#modal-recibo .modal');
+  const modalBody = document.querySelector('#modal-recibo .modal-body');
+  const oldMaxHeight = modal.style.maxHeight;
+  const oldOverflow = modalBody.style.overflowY;
   
+  modal.style.maxHeight = 'none';
+  modalBody.style.overflowY = 'visible';
+
   const opt = {
     margin:       10, 
     filename:     'Recibo_Atelie03.pdf',
@@ -1474,17 +1476,19 @@ function baixarPDF() {
     pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
   };
   
-  html2pdf().set(opt).from(clone).save().then(() => {
+  html2pdf().set(opt).from(element).save().then(() => {
       btn.innerText = textoOriginal;
-      document.body.removeChild(clone);
+      // Restaura o modal ao normal imediatamente após o download
+      modal.style.maxHeight = oldMaxHeight;
+      modalBody.style.overflowY = oldOverflow;
   }).catch(err => {
       btn.innerText = "❌ Erro ao baixar";
       console.error(err);
       setTimeout(() => { btn.innerText = textoOriginal; }, 2000);
-      document.body.removeChild(clone);
+      modal.style.maxHeight = oldMaxHeight;
+      modalBody.style.overflowY = oldOverflow;
   });
 }
-
 function gerarRecibo(idSaida) {
   const s = saidas.find(x => x.id == idSaida);
   if(!s) return;
