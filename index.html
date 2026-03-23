@@ -195,20 +195,11 @@
   .cart-btn-remove:hover { background: #fca5a5; }
   .section-divider { border: none; border-top: 1px dashed var(--green-mid); margin: 24px 0; }
 
-  /* RECIBO/NOTA PRINTABLE - OTIMIZADO PARA PDF E PAGE-BREAK */
-  .recibo-wrapper { font-family: monospace; color: #000; padding: 20px; background: #fff; width: 100%; box-sizing: border-box; }
-  .recibo-logo-area { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 15px; page-break-inside: avoid; }
-  .recibo-logo-area h1 { font-family: 'Playfair Display', serif; font-size: 32px; margin-bottom: 5px; }
-  .recibo-logo-area p { font-size: 14px; text-transform: uppercase; font-weight: bold; }
-  .recibo-section { margin-bottom: 15px; page-break-inside: avoid; }
-  .recibo-section p { margin-bottom: 5px; font-size: 14px; }
-  .recibo-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
-  .recibo-table th, .recibo-table td { border-bottom: 1px dashed #ccc; padding: 8px 0; text-align: left; font-size: 14px; }
-  .recibo-table th { font-weight: bold; }
-  .recibo-table tr { page-break-inside: avoid; page-break-after: auto; }
-  .recibo-total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 10px; page-break-inside: avoid; }
-  .recibo-assinatura { margin-top: 50px; text-align: center; page-break-inside: avoid; }
-  .recibo-assinatura .linha { border-top: 1px solid #000; width: 80%; margin: 0 auto 10px; }
+  /* =========================================================
+     🧾 RECIBO — gerado dinamicamente com inline styles
+     Apenas estilos do preview do modal ficam aqui
+     ========================================================= */
+  #recibo-dados { display: none; }
 
   /* SECTION BLOCKS & CARDS COMUNS */
   .section-block { background: var(--white); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); padding: 28px; margin-bottom: 24px; width: 100%; box-sizing: border-box;}
@@ -629,6 +620,7 @@
 
 </main>
 
+<!-- MODAIS -->
 <div class="modal-overlay" id="modal-cliente">
   <div class="modal">
     <div class="modal-header">
@@ -761,8 +753,7 @@
                      oninput="filtrarDropdownItens()" 
                      onfocus="mostrarDropdownItens()" 
                      autocomplete="off">
-              <div class="custom-search-list" id="custom-select-list">
-                </div>
+              <div class="custom-search-list" id="custom-select-list"></div>
               <input type="hidden" id="saida-item">
             </div>
           </div>
@@ -796,58 +787,34 @@
   </div>
 </div>
 
+<!-- MODAL RECIBO — apenas preview, PDF gerado a partir de elemento oculto -->
 <div class="modal-overlay" id="modal-recibo">
-  <div class="modal" style="background: #fff; border-radius: 8px;">
+  <div class="modal" style="background: #fff; border-radius: 8px; max-width: 680px;">
     <div class="modal-header">
       <h3>🧾 Gerar Recibo</h3>
       <button class="close-btn" onclick="closeModal('modal-recibo')">&times;</button>
     </div>
-    <div class="modal-body" style="background: #fafafa;">
-      <div id="print-area" class="recibo-wrapper">
-        <div class="recibo-logo-area">
-          <h1>Ateliê 03</h1>
-          <p>Documento de Confirmação de Pacote</p>
+    <div class="modal-body" style="background: #fafafa; padding: 20px;">
+      <!-- Preview simplificado dentro do modal -->
+      <div id="recibo-preview" style="background:#fff; border:1px solid #e2ece6; border-radius:8px; padding:20px; font-family:sans-serif; font-size:13px; color:#1a2e23;">
+        <div style="text-align:center; border-bottom:2px solid #2d6a4f; padding-bottom:12px; margin-bottom:16px;">
+          <div style="font-size:26px; font-weight:700; color:#2d6a4f; font-family:Georgia,serif;">Ateliê 03</div>
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:2px; color:#40916c; font-weight:700;">Documento de Confirmação de Pacote</div>
         </div>
-        
-        <div class="recibo-section">
-          <p><strong>Cliente:</strong> <span id="rec-cliente-nome">-</span></p>
-          <p><strong>CPF:</strong> <span id="rec-cliente-cpf">-</span></p>
-          <p><strong>Endereço:</strong> <span id="rec-cliente-end">-</span></p>
-          <p><strong>Data de Emissão:</strong> <span id="rec-data">-</span></p>
-          <p><strong>Pedido/Ref:</strong> <span id="rec-pedido">-</span></p>
-        </div>
-
-        <table class="recibo-table">
-          <thead>
-            <tr>
-              <th>Descrição do Item</th>
-              <th style="text-align: center;">Qtd</th>
-              <th style="text-align: right;">Val. Unit</th>
-              <th style="text-align: right;">Total</th>
-            </tr>
-          </thead>
-          <tbody id="recibo-tbody-itens">
-            </tbody>
-        </table>
-
-        <div class="recibo-total">
-          TOTAL DO PACOTE: <span id="rec-total-geral">R$ 0,00</span>
-        </div>
-
-        <div class="recibo-assinatura">
-          <p style="font-size: 12px; margin-bottom: 30px;">Declaro que recebi os itens acima descritos em perfeito estado e concordo com a entrega.</p>
-          <div class="linha"></div>
-          <p><strong>Assinatura do Cliente</strong></p>
-          <p id="rec-assinatura-nome" style="font-size: 14px; margin-top: 5px;">-</p>
-        </div>
+        <div id="rec-preview-info" style="margin-bottom:16px; font-size:13px; line-height:1.7;"></div>
+        <div id="rec-preview-itens" style="margin-bottom:16px;"></div>
+        <div id="rec-preview-total" style="text-align:right; font-size:16px; font-weight:700; color:#2d6a4f; padding:10px; background:#f0fdf4; border-radius:6px;"></div>
       </div>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline" onclick="closeModal('modal-recibo')">Fechar</button>
-      <button type="button" class="btn btn-print" onclick="baixarPDF()">📥 Baixar PDF</button>
+      <button type="button" class="btn btn-print" id="btn-baixar-pdf" onclick="baixarPDF()">📥 Baixar PDF</button>
     </div>
   </div>
 </div>
+
+<!-- Os dados do recibo são armazenados aqui e o PDF é gerado dinamicamente -->
+<div id="recibo-dados" style="display:none;"></div>
 
 <script>
 // ==========================================
@@ -874,7 +841,6 @@ let saidas = [];
 let clientes = []; 
 let carrinhoAtual = []; 
 
-// Fechar dropdown clicando fora
 document.addEventListener('click', function(e) {
     const wrapper = document.querySelector('.custom-search-wrapper');
     if (wrapper && !wrapper.contains(e.target)) {
@@ -1244,7 +1210,6 @@ function popularDropdownItens() {
       listDiv.innerHTML = '<div class="custom-option" style="color:#666; text-align:center;">Estoque vazio</div>';
       return;
   }
-  
   listDiv.innerHTML = estoque.map(i => {
     const textoCor = i.cor ? ` - ${i.cor}` : '';
     const labelCompleta = `${i.nome} - Tam: ${i.tamanho}${textoCor}`;
@@ -1276,10 +1241,8 @@ function esconderDropdownItens() {
 function selecionarItemBusca(id, preco, label) {
   document.getElementById('saida-item').value = id;
   document.getElementById('item-search-input').value = label;
-  
   const p = parseFloat(preco);
   document.getElementById('saida-valor').value = p ? p.toFixed(2).replace('.', ',') : '';
-  
   esconderDropdownItens();
 }
 
@@ -1301,13 +1264,8 @@ function adicionarAoCarrinho() {
       existente.dev += dev;
   } else {
       carrinhoAtual.push({
-          itemId: itemId,
-          itemNome: itemEstoque.nome,
-          itemTamanho: itemEstoque.tamanho,
-          itemCor: itemEstoque.cor,
-          qtd: qtd,
-          dev: dev,
-          valor: valor
+          itemId, itemNome: itemEstoque.nome, itemTamanho: itemEstoque.tamanho,
+          itemCor: itemEstoque.cor, qtd, dev, valor
       });
   }
 
@@ -1316,7 +1274,6 @@ function adicionarAoCarrinho() {
   document.getElementById('saida-qtd').value = 1;
   document.getElementById('saida-dev').value = 0;
   document.getElementById('saida-valor').value = '';
-
   renderCarrinho();
 }
 
@@ -1331,7 +1288,6 @@ function renderCarrinho() {
       divList.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--gray); font-size:13px; border:1px dashed var(--border); border-radius:10px;">Pacote vazio. Pesquise e adicione itens acima.</div>';
       return;
   }
-
   let totalPacote = 0;
   let html = '';
   carrinhoAtual.forEach((c, index) => {
@@ -1348,7 +1304,6 @@ function renderCarrinho() {
           <button class="cart-btn-remove" onclick="removerDoCarrinho(${index})">X</button>
       </div>`;
   });
-
   html += `<div style="text-align:right; font-weight:bold; color:var(--green); font-size:16px; margin-top:10px;">Total do Pacote: ${formatCurrency(totalPacote)}</div>`;
   divList.innerHTML = html;
 }
@@ -1362,7 +1317,6 @@ function salvarSaida() {
   if (!data) { alert('A Data do pedido é obrigatória!'); return; }
   if (carrinhoAtual.length === 0) { alert('O pacote está vazio. Adicione itens antes de registrar.'); return; }
 
-  // Validação de estoque real
   let tempStock = {};
   estoque.forEach(i => tempStock[i.id] = i.qtd);
 
@@ -1384,7 +1338,6 @@ function salvarSaida() {
      }
   }
 
-  // Aplicar mudanças no estoque real
   if (editId) {
      const oldS = saidas.find(x => x.id == editId);
      const oldItens = oldS.itens || [oldS];
@@ -1401,9 +1354,7 @@ function salvarSaida() {
 
   const novaSaida = {
      id: editId ? editId : Date.now(),
-     data: data,
-     clienteId: clienteId,
-     pedido: pedido,
+     data, clienteId, pedido,
      itens: [...carrinhoAtual] 
   };
 
@@ -1418,17 +1369,13 @@ function salvarSaida() {
 function editSaida(id) {
   const s = saidas.find(x => x.id == id);
   if (!s) return;
-  
   document.getElementById('saida-edit-id').value = s.id;
-  
   document.getElementById('saida-data').value = s.data;
   document.getElementById('saida-cliente').value = s.clienteId || '';
   document.getElementById('saida-pedido').value = s.pedido || '';
-  
   carrinhoAtual = s.itens ? JSON.parse(JSON.stringify(s.itens)) : [{
       itemId: s.itemId, itemNome: s.itemNome, itemTamanho: s.itemTamanho, itemCor: s.itemCor, qtd: s.qtd, dev: s.dev, valor: s.valor
   }];
-  
   openModal('modal-saida');
   renderCarrinho(); 
 }
@@ -1443,126 +1390,265 @@ function resetSaidaForm() {
 }
 
 // ==========================================
-// GERADOR DE PDF REAL E SEM QUEBRA DE PÁGINA
+// GERADOR DE RECIBO E PDF — ABORDAGEM DINÂMICA
+// Guarda os dados do recibo e gera o elemento
+// temporário NO momento do clique, evitando
+// qualquer problema de overflow/clip/posição.
 // ==========================================
-function baixarPDF() {
-  const originalElement = document.getElementById('print-area');
-  const btn = document.querySelector('.btn-print');
-  const textoOriginal = btn.innerText;
-  
-  btn.innerText = "⏳ Gerando PDF...";
-  
-  // 1. Cria um clone perfeito do elemento original
-  const clone = originalElement.cloneNode(true);
-  clone.id = 'pdf-clone-area';
-  
-  // 2. Tira o clone de dentro do modal e joga no body (atrás do fundo escuro)
-  // Isso livra o html2canvas das travas de scroll (overflow) do modal
-  clone.style.position = 'absolute';
-  clone.style.top = '0';
-  clone.style.left = '0';
-  clone.style.width = '800px'; // Força a largura de um papel A4
-  clone.style.padding = '40px';
-  clone.style.background = '#ffffff';
-  clone.style.zIndex = '-1000'; 
-  clone.classList.add('pdf-clone-style');
-  
-  document.body.appendChild(clone);
-
-  // 3. Injeta o CSS que força a tabela a ignorar o modo celular e assumir o layout de A4
-  const styleFix = document.createElement('style');
-  styleFix.id = 'pdf-style-fix';
-  styleFix.innerHTML = `
-    .pdf-clone-style { font-family: monospace, 'DM Sans', sans-serif !important; color: #000 !important; }
-    .pdf-clone-style .recibo-table { display: table !important; width: 100% !important; border-collapse: collapse !important; margin-top: 20px !important; }
-    .pdf-clone-style .recibo-table thead { display: table-header-group !important; }
-    .pdf-clone-style .recibo-table tbody { display: table-row-group !important; }
-    .pdf-clone-style .recibo-table tr { display: table-row !important; background: transparent !important; box-shadow: none !important; border: none !important; margin: 0 !important; }
-    .pdf-clone-style .recibo-table th, .pdf-clone-style .recibo-table td { display: table-cell !important; padding: 12px 8px !important; border: none !important; border-bottom: 1px dashed #ccc !important; vertical-align: middle !important; font-size: 15px !important; text-align: left !important; }
-    
-    /* Esconde os rótulos de celular gerados no CSS ::before */
-    .pdf-clone-style .recibo-table td::before { display: none !important; }
-    
-    /* Alinhamento exato das colunas para preencher o A4 */
-    .pdf-clone-style .recibo-table th:nth-child(1), .pdf-clone-style .recibo-table td:nth-child(1) { text-align: left !important; width: 45% !important; }
-    .pdf-clone-style .recibo-table th:nth-child(2), .pdf-clone-style .recibo-table td:nth-child(2) { text-align: center !important; width: 15% !important; }
-    .pdf-clone-style .recibo-table th:nth-child(3), .pdf-clone-style .recibo-table td:nth-child(3) { text-align: right !important; width: 20% !important; }
-    .pdf-clone-style .recibo-table th:nth-child(4), .pdf-clone-style .recibo-table td:nth-child(4) { text-align: right !important; width: 20% !important; }
-    
-    .pdf-clone-style .recibo-logo-area { text-align: center !important; border-bottom: 2px dashed #000 !important; padding-bottom: 20px !important; margin-bottom: 30px !important; }
-    .pdf-clone-style .recibo-total { text-align: right !important; font-weight: bold !important; font-size: 22px !important; margin-top: 30px !important; color: #000 !important; }
-    .pdf-clone-style .recibo-assinatura { text-align: center !important; margin-top: 80px !important; page-break-inside: avoid; }
-  `;
-  document.head.appendChild(styleFix);
-
-  // 4. Configuração do gerador PDF
-  const opt = {
-    margin:       [15, 15, 15, 15], // Margem agradável no A4
-    filename:     'Recibo_Atelie03.pdf',
-    image:        { type: 'jpeg', quality: 1 },
-    html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 800 },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  
-  // 5. Gera o PDF lendo o clone e limpa o lixo após o download
-  html2pdf().set(opt).from(clone).save().then(() => {
-      btn.innerText = textoOriginal;
-      document.body.removeChild(clone);
-      document.head.removeChild(styleFix);
-  }).catch(err => {
-      btn.innerText = "❌ Erro ao baixar";
-      console.error(err);
-      setTimeout(() => { btn.innerText = textoOriginal; }, 2000);
-      document.body.removeChild(clone);
-      document.head.removeChild(styleFix);
-  });
-}
+let _reciboData = null; // armazena os dados para o PDF
 
 function gerarRecibo(idSaida) {
   const s = saidas.find(x => x.id == idSaida);
-  if(!s) return;
-  
-  const c = clientes.find(x => x.id == s.clienteId);
-  const dataPtBr = formatDate(s.data);
+  if (!s) return;
 
-  document.getElementById('rec-cliente-nome').innerText = c ? c.nome : 'Consumidor Final';
-  document.getElementById('rec-cliente-cpf').innerText = c ? (c.cpf || 'Não informado') : '-';
-  document.getElementById('rec-cliente-end').innerText = c ? (c.endereco || 'Não informado') : '-';
-  document.getElementById('rec-data').innerText = dataPtBr;
-  document.getElementById('rec-pedido').innerText = s.pedido || s.id;
-  
-  const tbody = document.getElementById('recibo-tbody-itens');
-  let html = '';
+  const c           = clientes.find(x => x.id == s.clienteId);
+  const dataPtBr    = formatDate(s.data);
+  const dataEmissao = new Date().toLocaleDateString('pt-BR');
+  const itens       = s.itens || [s];
+
   let totalRecibo = 0;
+  const itensProcessados = itens.map(i => {
+    let cor = i.itemCor;
+    if (!cor && i.itemId) {
+      const ie = estoque.find(e => e.id == i.itemId);
+      if (ie && ie.cor) cor = ie.cor;
+    }
+    const subtotal = (i.valor || 0) * (i.qtd || 0);
+    totalRecibo += subtotal;
+    return { nome: i.itemNome, tam: i.itemTamanho, cor, qtd: i.qtd, valor: i.valor || 0, subtotal };
+  });
 
-  const itensParaRecibo = s.itens || [s]; 
+  // Salva para usar no baixarPDF
+  _reciboData = {
+    clienteNome  : c ? c.nome      : 'Consumidor Final',
+    clienteCpf   : c ? (c.cpf      || 'Não informado') : '-',
+    clienteEnd   : c ? (c.endereco || 'Não informado') : '-',
+    data         : dataPtBr,
+    pedido       : s.pedido || String(s.id),
+    dataEmissao,
+    itens        : itensProcessados,
+    total        : totalRecibo
+  };
 
-  itensParaRecibo.forEach(i => {
-      let corDoItem = i.itemCor;
-      if (!corDoItem && i.itemId) {
-         const itemAtual = estoque.find(estq => estq.id == i.itemId);
-         if (itemAtual && itemAtual.cor) corDoItem = itemAtual.cor;
-      }
-      
-      const textoCor = corDoItem ? ` - ${corDoItem}` : '';
-      const nomeFull = `${i.itemNome} - Tam: ${i.itemTamanho}${textoCor}`;
-      const subtotal = i.valor * i.qtd;
-      totalRecibo += subtotal;
+  // Monta preview no modal
+  const d = _reciboData;
+  document.getElementById('rec-preview-info').innerHTML = `
+    <strong>Cliente:</strong> ${d.clienteNome}<br>
+    <strong>CPF:</strong> ${d.clienteCpf}<br>
+    <strong>Data:</strong> ${d.data} &nbsp;|&nbsp; <strong>Pedido:</strong> ${d.pedido}<br>
+    <strong>Endereço:</strong> ${d.clienteEnd}
+  `;
 
-      html += `
+  let tbl = '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+    + '<thead><tr style="background:#d8f3dc;">'
+    + '<th style="padding:6px 8px;text-align:left;">Item</th>'
+    + '<th style="padding:6px 8px;text-align:center;">Qtd</th>'
+    + '<th style="padding:6px 8px;text-align:right;">Total</th>'
+    + '</tr></thead><tbody>';
+  d.itens.forEach(i => {
+    const cor = i.cor ? ` - ${i.cor}` : '';
+    tbl += `<tr>
+      <td style="padding:6px 8px;border-bottom:1px solid #eee;">${i.nome} (${i.tam}${cor})</td>
+      <td style="padding:6px 8px;text-align:center;border-bottom:1px solid #eee;">${i.qtd}</td>
+      <td style="padding:6px 8px;text-align:right;border-bottom:1px solid #eee;">${formatCurrency(i.subtotal)}</td>
+    </tr>`;
+  });
+  tbl += '</tbody></table>';
+
+  document.getElementById('rec-preview-itens').innerHTML = tbl;
+  document.getElementById('rec-preview-total').innerText = 'TOTAL: ' + formatCurrency(d.total);
+  openModal('modal-recibo');
+}
+
+// Gera o HTML completo do recibo como string pura (inline styles = 100% compatível com html2canvas)
+function buildReciboHTML(d) {
+  let linhasItens = '';
+  d.itens.forEach((i, idx) => {
+    const cor  = i.cor ? ` - ${i.cor}` : '';
+    const bg   = idx % 2 === 1 ? 'background:#f8fdf9;' : 'background:#fff;';
+    linhasItens += `
       <tr>
-        <td>${nomeFull}</td>
-        <td style="text-align: center;">${i.qtd}</td>
-        <td style="text-align: right;">${formatCurrency(i.valor)}</td>
-        <td style="text-align: right;">${formatCurrency(subtotal)}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #e2ece6;font-size:13px;color:#374151;${bg}word-break:break-word;">${i.nome} - Tam: ${i.tam}${cor}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #e2ece6;font-size:13px;color:#374151;text-align:center;${bg}">${i.qtd}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #e2ece6;font-size:13px;color:#374151;text-align:right;${bg}">${formatCurrency(i.valor)}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #e2ece6;font-size:13px;font-weight:700;color:#374151;text-align:right;${bg}">${formatCurrency(i.subtotal)}</td>
       </tr>`;
   });
 
-  tbody.innerHTML = html;
-  document.getElementById('rec-total-geral').innerText = formatCurrency(totalRecibo);
-  document.getElementById('rec-assinatura-nome').innerText = c ? c.nome : 'Assinatura do Cliente';
+  return `
+  <div style="
+    font-family: Arial, Helvetica, sans-serif;
+    background: #ffffff;
+    width: 794px;
+    min-height: 1123px;
+    padding: 56px 60px;
+    box-sizing: border-box;
+    color: #000;
+  ">
+    <!-- CABEÇALHO -->
+    <div style="text-align:center; border-bottom:3px solid #2d6a4f; padding-bottom:20px; margin-bottom:6px;">
+      <div style="font-family:Georgia,serif; font-size:44px; font-weight:700; color:#2d6a4f; margin:0 0 4px 0; letter-spacing:-1px;">Ateliê 03</div>
+      <div style="font-size:11px; text-transform:uppercase; letter-spacing:3px; color:#40916c; font-weight:700;">Moda Praia &amp; Biquínis</div>
+    </div>
+    <div style="text-align:center; font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:2px; margin:14px 0 22px 0; padding-bottom:14px; border-bottom:1px dashed #ccc;">
+      Documento de Confirmação de Pacote
+    </div>
 
-  openModal('modal-recibo');
+    <!-- DADOS DO CLIENTE (tabela 2 colunas — compatível com html2canvas) -->
+    <table style="width:100%; border-collapse:collapse; margin-bottom:22px; border:1px solid #d8f3dc; border-radius:6px; overflow:hidden;">
+      <tr>
+        <td style="width:50%; padding:10px 16px; background:#f8fdf9; border-bottom:1px solid #e2ece6; border-right:1px solid #e2ece6; vertical-align:top;">
+          <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#2d6a4f; margin-bottom:3px;">Cliente</div>
+          <div style="font-size:13px; color:#1a2e23;">${d.clienteNome}</div>
+        </td>
+        <td style="width:50%; padding:10px 16px; background:#f8fdf9; border-bottom:1px solid #e2ece6; vertical-align:top;">
+          <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#2d6a4f; margin-bottom:3px;">Data de Emissão</div>
+          <div style="font-size:13px; color:#1a2e23;">${d.data}</div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px; background:#f8fdf9; border-bottom:1px solid #e2ece6; border-right:1px solid #e2ece6; vertical-align:top;">
+          <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#2d6a4f; margin-bottom:3px;">CPF</div>
+          <div style="font-size:13px; color:#1a2e23;">${d.clienteCpf}</div>
+        </td>
+        <td style="padding:10px 16px; background:#f8fdf9; border-bottom:1px solid #e2ece6; vertical-align:top;">
+          <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#2d6a4f; margin-bottom:3px;">Pedido / Referência</div>
+          <div style="font-size:13px; color:#1a2e23;">${d.pedido}</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="padding:10px 16px; background:#f8fdf9; vertical-align:top;">
+          <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#2d6a4f; margin-bottom:3px;">Endereço de Entrega</div>
+          <div style="font-size:13px; color:#1a2e23;">${d.clienteEnd}</div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- TÍTULO DA SEÇÃO ITENS -->
+    <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#2d6a4f; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #d8f3dc;">
+      Itens do Pacote
+    </div>
+
+    <!-- TABELA DE ITENS -->
+    <table style="width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:fixed;">
+      <colgroup>
+        <col style="width:50%;">
+        <col style="width:12%;">
+        <col style="width:19%;">
+        <col style="width:19%;">
+      </colgroup>
+      <thead>
+        <tr style="background:#2d6a4f;">
+          <th style="padding:10px 14px; text-align:left; font-size:11px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.8px;">Descrição do Item</th>
+          <th style="padding:10px 14px; text-align:center; font-size:11px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.8px;">Qtd</th>
+          <th style="padding:10px 14px; text-align:right; font-size:11px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.8px;">Val. Unit.</th>
+          <th style="padding:10px 14px; text-align:right; font-size:11px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.8px;">Total</th>
+        </tr>
+      </thead>
+      <tbody>${linhasItens}</tbody>
+    </table>
+
+    <!-- TOTAL -->
+    <table style="width:100%; border-collapse:collapse; margin-bottom:40px;">
+      <tr>
+        <td style="text-align:right; padding:16px 20px; border:2px solid #2d6a4f; border-radius:6px; background:#f0fdf4;">
+          <span style="font-size:13px; text-transform:uppercase; letter-spacing:1px; color:#6b7280; font-weight:700; margin-right:20px;">Total do Pacote</span>
+          <span style="font-size:30px; font-weight:700; color:#2d6a4f;">${formatCurrency(d.total)}</span>
+        </td>
+      </tr>
+    </table>
+
+    <!-- ASSINATURA -->
+    <div style="margin-top:50px; text-align:center;">
+      <p style="font-size:12px; color:#6b7280; margin-bottom:48px; font-style:italic; line-height:1.6;">
+        Declaro que recebi os itens acima descritos em perfeito estado e concordo com a entrega.
+      </p>
+      <div style="border-top:1px solid #000; width:60%; margin:0 auto 10px;"></div>
+      <div style="font-size:14px; font-weight:700; color:#1a2e23;">${d.clienteNome}</div>
+      <div style="font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:1px; margin-top:4px;">Assinatura do Cliente</div>
+    </div>
+
+    <!-- RODAPÉ -->
+    <div style="margin-top:48px; padding-top:16px; border-top:1px dashed #ccc; text-align:center; font-size:11px; color:#9ca3af;">
+      Ateliê 03 &mdash; Documento gerado em ${d.dataEmissao}
+    </div>
+  </div>`;
+}
+
+function baixarPDF() {
+  if (!_reciboData) { alert('Nenhum recibo carregado. Clique em 🧾 PDF primeiro.'); return; }
+
+  const btn = document.getElementById('btn-baixar-pdf');
+  const textoOriginal = btn.innerText;
+  btn.innerText = '⏳ Gerando...';
+  btn.disabled = true;
+
+  // Cria um container temporário LIMPO, sem nenhum CSS herdado
+  const container = document.createElement('div');
+  container.style.cssText = [
+    'position:absolute',
+    'top:0',
+    'left:0',
+    'width:794px',
+    'background:#fff',
+    'z-index:-9999',
+    'overflow:visible',
+    'padding:0',
+    'margin:0',
+    'border:none',
+    'box-shadow:none',
+    'transform:none',
+    'clip:auto',
+    'clip-path:none',
+    'opacity:1',
+  ].join(';');
+
+  container.innerHTML = buildReciboHTML(_reciboData);
+  document.body.appendChild(container);
+
+  const el = container.firstElementChild;
+
+  // Pequeno delay para o browser renderizar antes de capturar
+  setTimeout(() => {
+    html2pdf()
+      .set({
+        margin:      0,
+        filename:    'Recibo_Atelie03.pdf',
+        image:       { type: 'jpeg', quality: 0.99 },
+        html2canvas: {
+          scale:           2,
+          useCORS:         true,
+          allowTaint:      true,
+          backgroundColor: '#ffffff',
+          scrollX:         0,
+          scrollY:         0,
+          x:               0,
+          y:               0,
+          windowWidth:     794,
+          windowHeight:    1123,
+          logging:         false
+        },
+        jsPDF: {
+          unit:        'px',
+          format:      [794, 1123],
+          orientation: 'portrait'
+        }
+      })
+      .from(el)
+      .save()
+      .then(() => {
+        document.body.removeChild(container);
+        btn.innerText = textoOriginal;
+        btn.disabled  = false;
+      })
+      .catch(err => {
+        document.body.removeChild(container);
+        console.error('Erro PDF:', err);
+        btn.innerText = '❌ Erro ao gerar';
+        btn.disabled  = false;
+        setTimeout(() => { btn.innerText = textoOriginal; }, 2500);
+      });
+  }, 200);
 }
 
 // ==========================================
@@ -1674,7 +1760,8 @@ function renderFinanceiro() {
   else if (ano) { list = list.filter(s => s.data.startsWith(ano)); }
   else if (mes) { list = list.filter(s => s.data.substring(5, 7) === mes); }
 
-  let bruta = 0, devVal = 0; const map = {};
+  let bruta = 0, devVal = 0;
+  const map = {};
 
   list.forEach(s => {
     const arrItens = s.itens || [s];
@@ -1734,14 +1821,15 @@ function renderDash() {
 }
 
 function formatDate(d) {
-  if (!d) return '-'; const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`;
+  if (!d) return '-';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
 }
 
 // INIT 
 renderDash(); 
 const abaSalva = localStorage.getItem('atelie_aba_atual') || 'dashboard';
 showPage(abaSalva);
-
 </script>
 </body>
 </html>
