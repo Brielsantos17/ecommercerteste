@@ -195,18 +195,19 @@
   .cart-btn-remove:hover { background: #fca5a5; }
   .section-divider { border: none; border-top: 1px dashed var(--green-mid); margin: 24px 0; }
 
-  /* RECIBO/NOTA PRINTABLE */
-  .recibo-wrapper { font-family: monospace; color: #000; padding: 20px; background: #fff; }
-  .recibo-logo-area { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 15px; }
+  /* RECIBO/NOTA PRINTABLE - OTIMIZADO PARA PDF E PAGE-BREAK */
+  .recibo-wrapper { font-family: monospace; color: #000; padding: 20px; background: #fff; width: 100%; box-sizing: border-box; }
+  .recibo-logo-area { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 15px; page-break-inside: avoid; }
   .recibo-logo-area h1 { font-family: 'Playfair Display', serif; font-size: 32px; margin-bottom: 5px; }
   .recibo-logo-area p { font-size: 14px; text-transform: uppercase; font-weight: bold; }
-  .recibo-section { margin-bottom: 15px; }
+  .recibo-section { margin-bottom: 15px; page-break-inside: avoid; }
   .recibo-section p { margin-bottom: 5px; font-size: 14px; }
   .recibo-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
   .recibo-table th, .recibo-table td { border-bottom: 1px dashed #ccc; padding: 8px 0; text-align: left; font-size: 14px; }
   .recibo-table th { font-weight: bold; }
-  .recibo-total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 10px; }
-  .recibo-assinatura { margin-top: 50px; text-align: center; }
+  .recibo-table tr { page-break-inside: avoid; page-break-after: auto; }
+  .recibo-total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 10px; page-break-inside: avoid; }
+  .recibo-assinatura { margin-top: 50px; text-align: center; page-break-inside: avoid; }
   .recibo-assinatura .linha { border-top: 1px solid #000; width: 80%; margin: 0 auto 10px; }
 
   /* SECTION BLOCKS & CARDS COMUNS */
@@ -1235,11 +1236,9 @@ function resetItemForm() {
   ['item-nome','item-tamanho','item-qtd','item-preco','item-cor','item-sku','item-edit-id'].forEach(id => document.getElementById(id).value = '');
 }
 
-
 // ==========================================
 // MÓDULO DE SAÍDAS (CARRINHO E BUSCA INTERATIVA)
 // ==========================================
-
 function popularDropdownItens() {
   const listDiv = document.getElementById('custom-select-list');
   if(estoque.length === 0) {
@@ -1313,7 +1312,6 @@ function adicionarAoCarrinho() {
       });
   }
 
-  // Limpa campos para nova adição
   document.getElementById('saida-item').value = '';
   document.getElementById('item-search-input').value = '';
   document.getElementById('saida-qtd').value = 1;
@@ -1365,7 +1363,7 @@ function salvarSaida() {
   if (!data) { alert('A Data do pedido é obrigatória!'); return; }
   if (carrinhoAtual.length === 0) { alert('O pacote está vazio. Adicione itens antes de registrar.'); return; }
 
-  // VALIDAÇÃO DE ESTOQUE GLOBAL
+  // Validação de estoque real
   let tempStock = {};
   estoque.forEach(i => tempStock[i.id] = i.qtd);
 
@@ -1387,7 +1385,7 @@ function salvarSaida() {
      }
   }
 
-  // APLICAR MUDANÇAS NO ESTOQUE REAL
+  // Aplicar mudanças no estoque real
   if (editId) {
      const oldS = saidas.find(x => x.id == editId);
      const oldItens = oldS.itens || [oldS];
@@ -1422,20 +1420,20 @@ function editSaida(id) {
   const s = saidas.find(x => x.id == id);
   if (!s) return;
   
-  // Seta o ID de edição ANTES de abrir o Modal, para o sistema não zerar o carrinho
+  // Seta o ID ANTES de abrir o Modal, para o sistema NÃO zerar o carrinho na nova condicional do openModal
   document.getElementById('saida-edit-id').value = s.id;
   
   document.getElementById('saida-data').value = s.data;
   document.getElementById('saida-cliente').value = s.clienteId || '';
   document.getElementById('saida-pedido').value = s.pedido || '';
   
-  // Retrocompatibilidade
+  // Retrocompatibilidade para edição
   carrinhoAtual = s.itens ? JSON.parse(JSON.stringify(s.itens)) : [{
       itemId: s.itemId, itemNome: s.itemNome, itemTamanho: s.itemTamanho, itemCor: s.itemCor, qtd: s.qtd, dev: s.dev, valor: s.valor
   }];
   
   openModal('modal-saida');
-  renderCarrinho(); // Renderiza com os dados velhos puxados
+  renderCarrinho(); 
 }
 
 function resetSaidaForm() {
@@ -1448,7 +1446,7 @@ function resetSaidaForm() {
 }
 
 // ==========================================
-// GERADOR DE PDF (HTML2PDF)
+// GERADOR DE PDF REAL E SEM QUEBRA DE PÁGINA
 // ==========================================
 function baixarPDF() {
   const element = document.getElementById('print-area');
@@ -1457,20 +1455,33 @@ function baixarPDF() {
   
   btn.innerText = "⏳ Gerando PDF...";
   
+  // Cria um clone "invisível" para garantir que o scroll do Modal e limites mobile não quebrem o PDF
+  const clone = element.cloneNode(true);
+  clone.style.width = '800px'; 
+  clone.style.padding = '40px';
+  clone.style.background = '#fff';
+  clone.style.position = 'absolute';
+  clone.style.top = '0';
+  clone.style.left = '-9999px'; 
+  document.body.appendChild(clone);
+  
   const opt = {
-    margin:       10,
+    margin:       10, 
     filename:     'Recibo_Atelie03.pdf',
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    html2canvas:  { scale: 2, useCORS: true, scrollY: 0, windowWidth: 800 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
   };
   
-  html2pdf().set(opt).from(element).save().then(() => {
+  html2pdf().set(opt).from(clone).save().then(() => {
       btn.innerText = textoOriginal;
+      document.body.removeChild(clone);
   }).catch(err => {
       btn.innerText = "❌ Erro ao baixar";
       console.error(err);
       setTimeout(() => { btn.innerText = textoOriginal; }, 2000);
+      document.body.removeChild(clone);
   });
 }
 
@@ -1545,10 +1556,7 @@ function renderSaidas() {
   let globalPedidos = 0, globalDevs = 0;
   list.forEach(s => {
      const arr = s.itens || [s];
-     arr.forEach(i => {
-        globalPedidos += (parseInt(i.qtd) || 0);
-        globalDevs += (parseInt(i.dev) || 0);
-     });
+     arr.forEach(i => { globalPedidos += (parseInt(i.qtd) || 0); globalDevs += (parseInt(i.dev) || 0); });
   });
 
   document.getElementById('saidas-resumo').innerHTML = `
