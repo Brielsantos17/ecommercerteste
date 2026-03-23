@@ -1481,10 +1481,8 @@ function renderDash() {
 
 function formatDate(d) { if (!d) return '-'; const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`; }
 
-// INICIALIZAÇÃO CORRETA PARA GITHUB PAGES
-window.onload = function() {
-    initLockScreen();
-};
+// Inicialização Direta (Sem esperar o load de arquivos de terceiros)
+initLockScreen();
 
 </script>
 </body>
