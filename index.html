@@ -945,23 +945,55 @@ initLockScreen();
 // ==========================================
 // FUNÇÕES DE NUVEM & LOAD
 // ==========================================
+
+// Detecta se o domínio atual está provavelmente bloqueado no Firebase
+// (GitHub Pages, domínios customizados não cadastrados, etc.)
+function showSyncStatus(msg, cor, autoHide = true) {
+  const el = document.getElementById('sync-status');
+  el.style.display = 'block';
+  el.innerText = msg;
+  el.style.background = cor || 'rgba(0,0,0,0.8)';
+  if (autoHide) setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
 async function loadData() {
-  const syncStatus = document.getElementById('sync-status');
   if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-    syncStatus.style.display = 'block';
-    syncStatus.innerText = '☁️ Sincronizando...';
+    showSyncStatus('☁️ Sincronizando...', 'rgba(0,0,0,0.8)', false);
     try {
       const docSnap = await db.collection("atelie").doc("dados").get();
       if (docSnap.exists) {
-        estoque = docSnap.data().estoque || [];
-        saidas = docSnap.data().saidas || [];
-        clientes = docSnap.data().clientes || []; 
+        estoque  = docSnap.data().estoque  || [];
+        saidas   = docSnap.data().saidas   || [];
+        clientes = docSnap.data().clientes || [];
       }
-      syncStatus.innerText = '✅ Sincronizado';
-      setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
+      showSyncStatus('✅ Sincronizado', 'rgba(45,106,79,0.9)');
     } catch (error) {
-      console.error("Erro no Firebase, puxando local", error);
+      console.error("Erro Firebase:", error);
       loadLocalFallback();
+
+      // Erro de domínio não autorizado (mais comum no GitHub Pages)
+      const isAuthError = error.code === 'permission-denied'
+        || (error.message && error.message.includes('auth'));
+      if (isAuthError) {
+        showSyncStatus('⚠️ Domínio não autorizado no Firebase', 'rgba(180,50,50,0.9)', false);
+        // Mostra alerta uma única vez por sessão
+        if (!sessionStorage.getItem('firebase_domain_alerted')) {
+          sessionStorage.setItem('firebase_domain_alerted', '1');
+          setTimeout(() => {
+            alert(
+              '⚠️ Firebase: domínio não autorizado\n\n' +
+              'Para funcionar no GitHub Pages, adicione seu domínio nas configurações do Firebase:\n\n' +
+              '1. Acesse console.firebase.google.com\n' +
+              '2. Seu projeto → Authentication → Settings → Authorized domains\n' +
+              '3. Clique em "Add domain" e adicione:\n' +
+              '   ' + window.location.hostname + '\n\n' +
+              'Enquanto isso, os dados ficam salvos localmente neste dispositivo.'
+            );
+          }, 800);
+        }
+      } else {
+        showSyncStatus('⚡ Offline — dados locais', 'rgba(100,100,100,0.85)');
+      }
     }
   } else {
     loadLocalFallback();
@@ -972,27 +1004,27 @@ async function loadData() {
 }
 
 function loadLocalFallback() {
-  estoque = JSON.parse(localStorage.getItem('atelie_estoque') || '[]');
-  saidas = JSON.parse(localStorage.getItem('atelie_saidas') || '[]');
+  estoque  = JSON.parse(localStorage.getItem('atelie_estoque')  || '[]');
+  saidas   = JSON.parse(localStorage.getItem('atelie_saidas')   || '[]');
   clientes = JSON.parse(localStorage.getItem('atelie_clientes') || '[]');
 }
 
 function save() {
-  localStorage.setItem('atelie_estoque', JSON.stringify(estoque));
-  localStorage.setItem('atelie_saidas', JSON.stringify(saidas));
+  // Sempre salva local primeiro — garante funcionamento offline/GitHub Pages
+  localStorage.setItem('atelie_estoque',  JSON.stringify(estoque));
+  localStorage.setItem('atelie_saidas',   JSON.stringify(saidas));
   localStorage.setItem('atelie_clientes', JSON.stringify(clientes));
 
   if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-    const syncStatus = document.getElementById('sync-status');
-    syncStatus.style.display = 'block';
-    syncStatus.innerText = '☁️ Salvando...';
-    db.collection("atelie").doc("dados").set({ estoque, saidas, clientes }).then(() => {
-      syncStatus.innerText = '✅ Salvo';
-      setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
-    }).catch(error => {
-      syncStatus.innerText = '❌ Erro';
-      setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
-    });
+    showSyncStatus('☁️ Salvando...', 'rgba(0,0,0,0.8)', false);
+    db.collection("atelie").doc("dados").set({ estoque, saidas, clientes })
+      .then(() => {
+        showSyncStatus('✅ Salvo na nuvem', 'rgba(45,106,79,0.9)');
+      })
+      .catch(error => {
+        console.error("Erro ao salvar Firebase:", error);
+        showSyncStatus('💾 Salvo localmente', 'rgba(100,100,100,0.85)');
+      });
   }
 }
 
