@@ -1454,53 +1454,81 @@ function resetSaidaForm() {
 // ==========================================
 // GERADOR DE PDF REAL E SEM QUEBRA DE PÁGINA
 // ==========================================
+// ==========================================
+// GERADOR DE PDF REAL E SEM QUEBRA DE PÁGINA
+// ==========================================
 function baixarPDF() {
-  const element = document.getElementById('print-area');
+  const originalElement = document.getElementById('print-area');
   const btn = document.querySelector('.btn-print');
   const textoOriginal = btn.innerText;
   
   btn.innerText = "⏳ Gerando PDF...";
   
-  // 1. Remove travas de rolagem do modal para o gerador ler a página toda
-  const modal = document.querySelector('#modal-recibo .modal');
-  const modalBody = document.querySelector('#modal-recibo .modal-body');
+  // 1. Cria um clone perfeito do elemento original
+  const clone = originalElement.cloneNode(true);
+  clone.id = 'pdf-clone-area';
   
-  const oldMaxHeight = modal.style.maxHeight;
-  const oldOverflow = modalBody.style.overflowY;
-  const oldWidth = element.style.width;
-  const oldPadding = element.style.padding;
+  // 2. Tira o clone de dentro do modal e joga no body (atrás do fundo escuro)
+  // Isso livra o html2canvas das travas de scroll (overflow) do modal
+  clone.style.position = 'absolute';
+  clone.style.top = '0';
+  clone.style.left = '0';
+  clone.style.width = '800px'; // Força a largura de um papel A4
+  clone.style.padding = '40px';
+  clone.style.background = '#ffffff';
+  clone.style.zIndex = '-1000'; 
+  clone.classList.add('pdf-clone-style');
   
-  modal.style.maxHeight = 'none';
-  modalBody.style.overflowY = 'visible';
-  element.style.width = '800px'; // Força a largura exata de um papel A4
-  element.style.padding = '40px';
+  document.body.appendChild(clone);
 
-  // 2. Injeta CSS temporário para anular o layout espremido de celular na hora do print
+  // 3. Injeta o CSS que força a tabela a ignorar o modo celular e assumir o layout de A4
   const styleFix = document.createElement('style');
-  styleFix.id = 'temp-pdf-fix';
+  styleFix.id = 'pdf-style-fix';
   styleFix.innerHTML = `
-    #print-area .recibo-table { display: table !important; width: 100% !important; border-collapse: collapse !important; }
-    #print-area .recibo-table thead { display: table-header-group !important; }
-    #print-area .recibo-table tbody { display: table-row-group !important; }
-    #print-area .recibo-table tr { display: table-row !important; border: none !important; margin: 0 !important; box-shadow: none !important; }
-    #print-area .recibo-table th, #print-area .recibo-table td { display: table-cell !important; padding: 10px 5px !important; border: none !important; border-bottom: 1px dashed #ccc !important; text-align: left !important; }
-    #print-area .recibo-table td::before { display: none !important; } /* Esconde as marcações "QTD/VALOR" do modo celular */
-    #print-area .recibo-table th:nth-child(2), #print-area .recibo-table td:nth-child(2) { text-align: center !important; }
-    #print-area .recibo-table th:nth-child(3), #print-area .recibo-table td:nth-child(3) { text-align: right !important; }
-    #print-area .recibo-table th:nth-child(4), #print-area .recibo-table td:nth-child(4) { text-align: right !important; }
-    #print-area .recibo-logo-area { text-align: center !important; margin-bottom: 20px !important; }
-    #print-area .recibo-total { text-align: right !important; font-weight: bold !important; font-size: 18px !important; margin-top: 20px !important; }
-    #print-area .recibo-assinatura { text-align: center !important; margin-top: 60px !important; }
+    .pdf-clone-style { font-family: monospace, 'DM Sans', sans-serif !important; color: #000 !important; }
+    .pdf-clone-style .recibo-table { display: table !important; width: 100% !important; border-collapse: collapse !important; margin-top: 20px !important; }
+    .pdf-clone-style .recibo-table thead { display: table-header-group !important; }
+    .pdf-clone-style .recibo-table tbody { display: table-row-group !important; }
+    .pdf-clone-style .recibo-table tr { display: table-row !important; background: transparent !important; box-shadow: none !important; border: none !important; margin: 0 !important; }
+    .pdf-clone-style .recibo-table th, .pdf-clone-style .recibo-table td { display: table-cell !important; padding: 12px 8px !important; border: none !important; border-bottom: 1px dashed #ccc !important; vertical-align: middle !important; font-size: 15px !important; }
+    
+    /* Esconde os rótulos de celular gerados no CSS ::before */
+    .pdf-clone-style .recibo-table td::before { display: none !important; }
+    
+    /* Alinhamento exato das colunas para preencher o A4 */
+    .pdf-clone-style .recibo-table th:nth-child(1), .pdf-clone-style .recibo-table td:nth-child(1) { text-align: left !important; width: 45% !important; }
+    .pdf-clone-style .recibo-table th:nth-child(2), .pdf-clone-style .recibo-table td:nth-child(2) { text-align: center !important; width: 15% !important; }
+    .pdf-clone-style .recibo-table th:nth-child(3), .pdf-clone-style .recibo-table td:nth-child(3) { text-align: right !important; width: 20% !important; }
+    .pdf-clone-style .recibo-table th:nth-child(4), .pdf-clone-style .recibo-table td:nth-child(4) { text-align: right !important; width: 20% !important; }
+    
+    .pdf-clone-style .recibo-logo-area { text-align: center !important; border-bottom: 2px dashed #000 !important; padding-bottom: 20px !important; margin-bottom: 30px !important; }
+    .pdf-clone-style .recibo-total { text-align: right !important; font-weight: bold !important; font-size: 22px !important; margin-top: 30px !important; color: #000 !important; }
+    .pdf-clone-style .recibo-assinatura { text-align: center !important; margin-top: 80px !important; page-break-inside: avoid; }
   `;
   document.head.appendChild(styleFix);
 
+  // 4. Configuração do gerador PDF
   const opt = {
-    margin:       10, 
+    margin:       [15, 15, 15, 15], // Margem agradável no A4
     filename:     'Recibo_Atelie03.pdf',
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, scrollY: 0, windowWidth: 800 },
+    image:        { type: 'jpeg', quality: 1 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 800 },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
+  
+  // 5. Gera o PDF lendo o clone e limpa o lixo após o download
+  html2pdf().set(opt).from(clone).save().then(() => {
+      btn.innerText = textoOriginal;
+      document.body.removeChild(clone);
+      document.head.removeChild(styleFix);
+  }).catch(err => {
+      btn.innerText = "❌ Erro ao baixar";
+      console.error(err);
+      setTimeout(() => { btn.innerText = textoOriginal; }, 2000);
+      document.body.removeChild(clone);
+      document.head.removeChild(styleFix);
+  });
+}
   
   // 3. Gera o PDF do elemento real visível e depois restaura tudo
   html2pdf().set(opt).from(element).save().then(() => {
