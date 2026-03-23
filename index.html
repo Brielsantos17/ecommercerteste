@@ -40,44 +40,7 @@
     overscroll-behavior-y: none;
   }
 
-  /* =========================================================
-     🔒 TELA DE BLOQUEIO
-     ========================================================= */
-  #lock-screen {
-    position: fixed; inset: 0; background: var(--off-white); z-index: 99999;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
-  }
-  #lock-screen.unlocked { transform: translateY(-100%); opacity: 0; pointer-events: none; }
-  .lock-header { text-align: center; margin-bottom: 40px; }
-  .lock-header h1 { font-family: 'Playfair Display', serif; font-size: 34px; color: var(--green); margin-bottom: 8px; }
-  .lock-header p { font-size: 15px; color: var(--gray); font-weight: 500; }
   
-  .pin-dots { 
-    display: flex; gap: 20px; margin-bottom: 60px; height: 30px; align-items: center; 
-    padding: 10px 20px; border-radius: 20px; cursor: pointer;
-    background: rgba(45,106,79,0.05); 
-  }
-  .pin-dots .dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--green); transition: all 0.15s; }
-  .pin-dots .dot.filled { background: var(--green); }
-  .pin-dots.error-shake { animation: shake 0.4s; }
-  
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-12px); }
-    40%, 80% { transform: translateX(12px); }
-  }
-
-  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 24px; }
-  .keypad-btn {
-    width: 72px; height: 72px; border-radius: 50%; border: none; background: rgba(45,106,79,0.06);
-    font-size: 28px; font-weight: 500; font-family: 'DM Sans', sans-serif; color: var(--green);
-    display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.1s;
-    -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation;
-  }
-  .keypad-btn:active { background: rgba(45,106,79,0.15); }
-  .keypad-btn.action-btn { background: transparent; font-size: 24px; color: var(--gray); }
-
   /* SIDEBAR (Desktop) */
   .sidebar {
     width: 240px; background: var(--green); min-height: 100vh; display: flex; flex-direction: column;
@@ -293,39 +256,6 @@
 <body>
 
 <div id="sync-status">☁️ Sincronizando...</div>
-
-<div id="lock-screen">
-  <div class="lock-header">
-    <h1>Ateliê 03</h1>
-    <p>Digite a senha de acesso</p>
-  </div>
-  
-  <input type="tel" id="hidden-pin" maxlength="6" style="position: absolute; opacity: 0; pointer-events: none; left: -999px;" autocomplete="off">
-  
-  <div class="pin-dots" id="pin-dots" onclick="document.getElementById('hidden-pin').focus()">
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  </div>
-
-  <div class="keypad">
-    <button type="button" class="keypad-btn" onclick="addPin('1')">1</button>
-    <button type="button" class="keypad-btn" onclick="addPin('2')">2</button>
-    <button type="button" class="keypad-btn" onclick="addPin('3')">3</button>
-    <button type="button" class="keypad-btn" onclick="addPin('4')">4</button>
-    <button type="button" class="keypad-btn" onclick="addPin('5')">5</button>
-    <button type="button" class="keypad-btn" onclick="addPin('6')">6</button>
-    <button type="button" class="keypad-btn" onclick="addPin('7')">7</button>
-    <button type="button" class="keypad-btn" onclick="addPin('8')">8</button>
-    <button type="button" class="keypad-btn" onclick="addPin('9')">9</button>
-    <div style="width: 100%; height: 100%;"></div> 
-    <button type="button" class="keypad-btn" onclick="addPin('0')">0</button>
-    <button type="button" class="keypad-btn action-btn" onclick="removePin()">⌫</button>
-  </div>
-</div>
 
 <aside class="sidebar">
   <div class="logo">
