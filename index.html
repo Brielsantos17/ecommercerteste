@@ -1444,4 +1444,284 @@ function editSaida(id) {
 // RECIBO COMPATÍVEL COM PACOTES
 function gerarRecibo(idSaida) {
   const s = saidas.find(x => x.id == idSaida);
-  if
+  if(!s) return;
+  
+  const c = clientes.find(x => x.id == s.clienteId);
+  const dataPtBr = formatDate(s.data);
+
+  document.getElementById('rec-cliente-nome').innerText = c ? c.nome : 'Consumidor Final';
+  document.getElementById('rec-cliente-cpf').innerText = c ? (c.cpf || 'Não informado') : '-';
+  document.getElementById('rec-cliente-end').innerText = c ? (c.endereco || 'Não informado') : '-';
+  document.getElementById('rec-data').innerText = dataPtBr;
+  document.getElementById('rec-pedido').innerText = s.pedido || s.id;
+  
+  const tbody = document.getElementById('recibo-tbody-itens');
+  let html = '';
+  let totalRecibo = 0;
+
+  // Tratativa para lidar com pacotes novos ou saídas antigas
+  const itensParaRecibo = s.itens || [s]; 
+
+  itensParaRecibo.forEach(i => {
+      // Puxa a cor do item se ele não foi salvo na saída antiga
+      let corDoItem = i.itemCor;
+      if (!corDoItem && i.itemId) {
+         const itemAtual = estoque.find(estq => estq.id == i.itemId);
+         if (itemAtual && itemAtual.cor) corDoItem = itemAtual.cor;
+      }
+      
+      const textoCor = corDoItem ? ` - ${corDoItem}` : '';
+      const nomeFull = `${i.itemNome} - Tam: ${i.itemTamanho}${textoCor}`;
+      const subtotal = i.valor * i.qtd;
+      totalRecibo += subtotal;
+
+      html += `
+      <tr>
+        <td>${nomeFull}</td>
+        <td style="text-align: center;">${i.qtd}</td>
+        <td style="text-align: right;">${formatCurrency(i.valor)}</td>
+        <td style="text-align: right;">${formatCurrency(subtotal)}</td>
+      </tr>`;
+  });
+
+  tbody.innerHTML = html;
+  document.getElementById('rec-total-geral').innerText = formatCurrency(totalRecibo);
+  document.getElementById('rec-assinatura-nome').innerText = c ? c.nome : 'Assinatura do Cliente';
+
+  openModal('modal-recibo');
+}
+
+function getFiltredSaidas() {
+  let list = [...saidas];
+  const ini = document.getElementById('filter-inicio')?.value;
+  const fim = document.getElementById('filter-fim')?.value;
+  if (ini) list = list.filter(s => s.data >= ini);
+  if (fim) list = list.filter(s => s.data <= fim);
+  return list.sort((a,b) => b.data.localeCompare(a.data));
+}
+
+function renderSaidas() {
+  const tbody = document.getElementById('saidas-body');
+  const list = getFiltredSaidas();
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">📦</div><p>Nenhuma saída registrada ainda.</p></div></td></tr>';
+    document.getElementById('saidas-resumo').innerHTML = '';
+    return;
+  }
+
+  // Cálculos considerando pacotes
+  let globalPedidos = 0, globalDevs = 0;
+  list.forEach(s => {
+     const arr = s.itens || [s];
+     arr.forEach(i => {
+        globalPedidos += (parseInt(i.qtd) || 0);
+        globalDevs += (parseInt(i.dev) || 0);
+     });
+  });
+
+  document.getElementById('saidas-resumo').innerHTML = `
+    <div style="background:var(--green-pale);border-radius:8px;padding:8px 12px;font-size:12px;">
+      <strong style="color:var(--green)">📦 ${list.length} pacotes fechados</strong>
+    </div>
+    <div style="background:var(--green-pale);border-radius:8px;padding:8px 12px;font-size:12px;">
+      <strong style="color:var(--green)">✅ ${globalPedidos} peças entregues</strong>
+    </div>
+    <div style="background:#fee2e2;border-radius:8px;padding:8px 12px;font-size:12px;">
+      <strong style="color:#991b1b">↩️ ${globalDevs} peças dev.</strong>
+    </div>
+  `;
+
+  tbody.innerHTML = list.map(s => {
+    const c = clientes.find(x => x.id == s.clienteId);
+    const nomeCli = c ? c.nome : 'Consumidor';
+    
+    // Ler itens do pacote (com retrocompatibilidade)
+    const itensPacote = s.itens || [s];
+    const pacoteQtdTotal = itensPacote.reduce((acc, i) => acc + (parseInt(i.qtd)||0), 0);
+    const pacoteDevTotal = itensPacote.reduce((acc, i) => acc + (parseInt(i.dev)||0), 0);
+    const pacoteValorTotal = itensPacote.reduce((acc, i) => acc + (parseFloat(i.valor||0) * parseInt(i.qtd||0)), 0);
+    
+    // Montar descrição curta para a tabela
+    const descItens = itensPacote.map(i => `<span style="display:block;margin-bottom:2px;font-size:12px;">• ${i.itemNome} (${i.qtd}x)</span>`).join('');
+
+    return `
+    <tr>
+      <td data-label="Data">${formatDate(s.data)}</td>
+      <td data-label="Itens do Pacote" style="line-height:1.2;">${descItens}</td>
+      <td data-label="Cliente/Ped">${nomeCli}<br><small style="color:var(--gray)">${s.pedido||'Avulso'}</small></td>
+      <td data-label="Peças Entregues" style="font-weight:700;color:var(--green)">${pacoteQtdTotal} ${pacoteDevTotal > 0 ? `<span class="badge badge-dev">↩️ -${pacoteDevTotal}</span>` : ''}</td>
+      <td data-label="Valor Total">${formatCurrency(pacoteValorTotal)}</td>
+      <td data-label="Ações">
+        <button type="button" class="btn btn-sm" style="background:#3b82f6;color:white;" onclick="gerarRecibo(${s.id})" title="Gerar Recibo">🧾 PDF</button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="editSaida(${s.id})">✏️</button>
+        <button type="button" class="btn btn-sm btn-danger" onclick="deleteSaida(${s.id})">🗑️</button>
+      </td>
+    </tr>
+  `}).join('');
+}
+
+function deleteSaida(id) {
+  if (!confirm('Deletar pacote inteiro? Todos os itens voltarão ao estoque.')) return;
+  const s = saidas.find(x => x.id == id);
+  if (s) {
+      const itensArr = s.itens || [s];
+      itensArr.forEach(oi => {
+         const itemEstq = estoque.find(i => i.id == oi.itemId);
+         if (itemEstq) itemEstq.qtd += (oi.qtd - (oi.dev || 0));
+      });
+  }
+  saidas = saidas.filter(x => x.id != id);
+  save(); renderSaidas(); renderDash();
+}
+
+function resetSaidaForm() {
+  ['saida-data','saida-cliente','saida-item','saida-qtd','saida-dev','saida-valor','saida-pedido','saida-edit-id'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('saida-qtd').value = 1;
+  document.getElementById('saida-dev').value = 0;
+  carrinhoAtual = [];
+  renderCarrinho();
+}
+
+function limparSelectsEFiltrar() {
+  document.getElementById('filter-mes').value = '';
+  document.getElementById('filter-ano').value = '';
+  renderSaidas();
+}
+
+function aplicarFiltroMes() {
+  const mes = document.getElementById('filter-mes').value;
+  let ano = document.getElementById('filter-ano').value;
+  if (mes && !ano) {
+    ano = new Date().getFullYear().toString();
+    document.getElementById('filter-ano').value = ano;
+  }
+  if (ano) {
+    if (mes) {
+      document.getElementById('filter-inicio').value = `${ano}-${mes}-01`;
+      const lastDay = new Date(ano, mes, 0).getDate();
+      document.getElementById('filter-fim').value = `${ano}-${mes}-${lastDay}`;
+    } else {
+      document.getElementById('filter-inicio').value = `${ano}-01-01`;
+      document.getElementById('filter-fim').value = `${ano}-12-31`;
+    }
+  } else {
+    if (!mes) {
+       document.getElementById('filter-inicio').value = '';
+       document.getElementById('filter-fim').value = '';
+    }
+  }
+  renderSaidas();
+}
+
+function limparFiltros() {
+  document.getElementById('filter-inicio').value = '';
+  document.getElementById('filter-fim').value = '';
+  document.getElementById('filter-mes').value = '';
+  document.getElementById('filter-ano').value = '';
+  renderSaidas();
+}
+
+// ==========================================
+// MÓDULO FINANCEIRO & DASHBOARD (AGREGANDO PACOTES)
+// ==========================================
+function renderFinanceiro() {
+  const mes = document.getElementById('fin-mes').value;
+  const ano = document.getElementById('fin-ano').value;
+  let list = [...saidas];
+  
+  if (mes && ano) { list = list.filter(s => s.data.startsWith(`${ano}-${mes}`)); }
+  else if (ano) { list = list.filter(s => s.data.startsWith(ano)); }
+  else if (mes) { list = list.filter(s => s.data.substring(5, 7) === mes); }
+
+  let bruta = 0, devVal = 0;
+  const map = {};
+
+  list.forEach(s => {
+    const arrItens = s.itens || [s];
+    arrItens.forEach(i => {
+       bruta += (i.valor * i.qtd);
+       devVal += (i.valor * i.dev);
+
+       const key = `${i.itemId}`;
+       if (!map[key]) map[key] = { nome: i.itemNome, tam: i.itemTamanho, qtd: 0, dev: 0, val: 0 };
+       map[key].qtd += i.qtd;
+       map[key].dev += i.dev;
+       map[key].val += i.valor * (i.qtd - i.dev); 
+    });
+  });
+
+  const liquida = bruta - devVal;
+  document.getElementById('fin-bruta').textContent = formatCurrency(bruta);
+  document.getElementById('fin-dev').textContent = formatCurrency(devVal);
+  document.getElementById('fin-liquida').textContent = formatCurrency(liquida);
+
+  const tbody = document.getElementById('fin-body');
+  const rows = Object.values(map);
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><p>Nenhum dado para o período.</p></div></td></tr>';
+  } else {
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td data-label="Item">${r.nome}</td>
+        <td data-label="Tamanho">${r.tam}</td>
+        <td data-label="Qtd Vendida" style="font-weight:700;color:var(--green)">${r.qtd}</td>
+        <td data-label="Devoluções" style="color:#e63946">${r.dev}</td>
+        <td data-label="Receita Líq." style="font-weight:700">${formatCurrency(r.val)}</td>
+      </tr>
+    `).join('');
+  }
+}
+
+function renderDash() {
+  document.getElementById('dash-total-itens').textContent = estoque.length;
+  document.getElementById('dash-total-clientes').textContent = clientes.length;
+
+  let totalPed = 0, totalDev = 0, bruta = 0, devVal = 0;
+  saidas.forEach(s => {
+     const arrItens = s.itens || [s];
+     arrItens.forEach(i => {
+        totalPed += i.qtd;
+        totalDev += i.dev;
+        bruta += (i.valor * i.qtd);
+        devVal += (i.valor * i.dev);
+     });
+  });
+  
+  const liquida = bruta - devVal;
+
+  document.getElementById('dash-total-pedidos').textContent = totalPed;
+  document.getElementById('dash-receita').textContent = formatCurrency(liquida);
+
+  const low = estoque.filter(i => i.qtd <= 3);
+  const cont = document.getElementById('dash-low-stock');
+  if (!low.length) {
+    cont.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><p>Tudo certo no estoque.</p></div>';
+  } else {
+    const sizeBadge = { PP:'badge-pp', P:'badge-p', M:'badge-m', G:'badge-g', GG:'badge-gg', Único:'badge-u' };
+    cont.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;">${low.map(i=>`
+      <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:16px;">
+        <div style="font-weight:700;color:#1a2e23;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${i.nome}">${i.nome}</div>
+        <div style="margin-top:6px"><span class="badge ${sizeBadge[i.tamanho]||'badge-u'}">${i.tamanho}</span></div>
+        <div style="margin-top:10px;font-size:13px;color:#e63946;font-weight:700">⚠️ ${i.qtd} rest.</div>
+      </div>
+    `).join('')}</div>`;
+  }
+}
+
+function formatDate(d) {
+  if (!d) return '-';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+
+// INIT 
+renderDash(); 
+const abaSalva = localStorage.getItem('atelie_aba_atual') || 'dashboard';
+showPage(abaSalva);
+
+</script>
+</body>
+</html>
