@@ -222,7 +222,7 @@
   }
 
   /* =========================================================
-     🖨️ CONFIGURAÇÕES DE IMPRESSÃO
+     🖨️ CONFIGURAÇÕES DE IMPRESSÃO - CORRIGIDO (CHAVES FECHADAS)
      ========================================================= */
   @media print {
     body * { visibility: hidden; }
@@ -232,14 +232,9 @@
     .modal { box-shadow: none; max-width: 100%; border-radius: 0; }
     .modal-header, .modal-footer { display: none !important; }
     .recibo-wrapper { font-size: 12px; }
+    /* REMOVE A URL E A DATA DO CABEÇALHO/RODAPÉ */
+    @page { margin: 0; }
   }
-  /* =========================================================
-     🖨️ CONFIGURAÇÕES DE IMPRESSÃO
-     ========================================================= */
-  @media print {
-    /* ESTA É A REGRA QUE REMOVE A URL E A DATA DO CABEÇALHO/RODAPÉ */
-    @page {
-      margin: 0;
 
   /* =========================================================
      📱 MOBILE UI
@@ -1288,7 +1283,11 @@ function resetItemForm() {
 function populateSaidaSelect() {
   const sel = document.getElementById('saida-item');
   sel.innerHTML = '<option value="">Selecione o item</option>' +
-    estoque.map(i => `<option value="${i.id}" data-preco="${i.preco}">${i.nome} - ${i.tamanho} (Estq: ${i.qtd})</option>`).join('');
+    estoque.map(i => {
+      // ADICIONADO: Exibe a cor do item no dropdown
+      const textoCor = i.cor ? ` - ${i.cor}` : '';
+      return `<option value="${i.id}" data-preco="${i.preco}">${i.nome} - ${i.tamanho}${textoCor} (Estq: ${i.qtd})</option>`;
+    }).join('');
 }
 
 function autoPreco() {
