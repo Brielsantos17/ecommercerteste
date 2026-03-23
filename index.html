@@ -40,7 +40,6 @@
     overscroll-behavior-y: none;
   }
 
-  
   /* SIDEBAR (Desktop) */
   .sidebar {
     width: 240px; background: var(--green); min-height: 100vh; display: flex; flex-direction: column;
@@ -188,11 +187,6 @@
      📱 MOBILE UI
      ========================================================= */
   @media (max-width: 768px) {
-    .lock-header h1 { font-size: 28px; }
-    .pin-dots { margin-bottom: 40px; }
-    .keypad { gap: 12px 20px; }
-    .keypad-btn { width: 68px; height: 68px; font-size: 26px; }
-
     .sidebar {
       width: 100vw; height: 72px; min-height: auto; flex-direction: row; top: auto; bottom: 0;
       box-shadow: 0 -4px 20px rgba(0,0,0,0.1); padding-bottom: env(safe-area-inset-bottom);
@@ -282,10 +276,6 @@
     <div class="nav-item" onclick="showPage('financeiro', this)" data-target="financeiro">
       <span class="nav-icon">💰</span>
       <span>Finanças</span>
-    </div>
-    <div class="nav-item" onclick="forceLock()" style="margin-top: 20px; color: #e63946;">
-      <span class="nav-icon">🔒</span>
-      <span>Bloquear</span>
     </div>
   </nav>
   <div class="sidebar-footer">
@@ -734,6 +724,8 @@
   </div>
 </div>
 
+<div id="recibo-dados" style="display:none;"></div>
+
 <script>
 // ==========================================
 // CONFIGURAÇÃO DO FIREBASE (NUVEM) E VARS
@@ -763,81 +755,6 @@ let _reciboData = null;
 document.addEventListener('click', function(e) {
     const wrapper = document.querySelector('.custom-search-wrapper');
     if (wrapper && !wrapper.contains(e.target)) esconderDropdownItens();
-});
-
-// ==========================================
-// TELA DE BLOQUEIO
-// ==========================================
-const SENHA_CORRETA = "123456";
-let senhaAtual = "";
-
-function initLockScreen() {
-  const lockScreen = document.getElementById('lock-screen');
-  const lastLoginDate = localStorage.getItem('atelie_last_login_date');
-  if (lastLoginDate === new Date().toDateString()) {
-    lockScreen.style.display = 'none';
-    loadData(); 
-  } else {
-    lockScreen.style.display = 'flex';
-    lockScreen.classList.remove('unlocked');
-  }
-}
-
-function updateDots() {
-  const dots = document.querySelectorAll('#pin-dots .dot');
-  dots.forEach((dot, index) => {
-    if (index < senhaAtual.length) dot.classList.add('filled'); 
-    else dot.classList.remove('filled');
-  });
-}
-
-document.getElementById('hidden-pin').addEventListener('input', function(e) {
-  senhaAtual = e.target.value.replace(/\D/g, '').substring(0, 6);
-  e.target.value = senhaAtual; updateDots();
-  if (senhaAtual.length === 6) setTimeout(checkPin, 150);
-});
-
-function addPin(n) {
-  if (senhaAtual.length < 6) {
-    senhaAtual += n; document.getElementById('hidden-pin').value = senhaAtual; updateDots();
-    if (senhaAtual.length === 6) setTimeout(checkPin, 150);
-  }
-}
-
-function removePin() {
-  senhaAtual = senhaAtual.slice(0, -1);
-  document.getElementById('hidden-pin').value = senhaAtual; updateDots();
-}
-
-function checkPin() {
-  const lockScreen = document.getElementById('lock-screen');
-  if (senhaAtual === SENHA_CORRETA) {
-    localStorage.setItem('atelie_last_login_date', new Date().toDateString());
-    lockScreen.classList.add('unlocked');
-    document.getElementById('hidden-pin').blur(); 
-    setTimeout(() => { lockScreen.style.display = 'none'; loadData(); }, 500);
-  } else {
-    document.getElementById('pin-dots').classList.add('error-shake');
-    setTimeout(() => {
-      document.getElementById('pin-dots').classList.remove('error-shake');
-      senhaAtual = ""; document.getElementById('hidden-pin').value = ""; updateDots();
-    }, 400);
-  }
-}
-
-function forceLock() {
-  localStorage.removeItem('atelie_last_login_date');
-  senhaAtual = ""; document.getElementById('hidden-pin').value = ""; updateDots();
-  document.getElementById('lock-screen').style.display = 'flex';
-  setTimeout(() => { document.getElementById('lock-screen').classList.remove('unlocked'); }, 10);
-}
-
-document.addEventListener('keydown', function(e) {
-  const ls = document.getElementById('lock-screen');
-  if (ls && ls.style.display !== 'none' && !ls.classList.contains('unlocked')) {
-    if (e.key >= '0' && e.key <= '9') addPin(e.key); 
-    else if (e.key === 'Backspace') removePin();
-  }
 });
 
 // ==========================================
@@ -1275,7 +1192,7 @@ function buildReciboHTML(d) {
 }
 
 function baixarPDF() {
-  if (!_reciboData) { alert('Nenhum recibo carregado.'); return; }
+  if (!_reciboData) { alert('Nenhum recibo carregado. Clique em 🧾 PDF primeiro.'); return; }
   const btn = document.getElementById('btn-baixar-pdf'); const textoOriginal = btn.innerText;
   btn.innerText = '⏳ Gerando...'; btn.disabled = true;
 
@@ -1394,7 +1311,6 @@ function renderDash() {
   document.getElementById('dash-total-itens').textContent = estoque.length; document.getElementById('dash-total-clientes').textContent = clientes.length;
   let totalPed = 0, bruta = 0, devVal = 0;
   saidas.forEach(s => { (s.itens || [s]).forEach(i => { totalPed += i.qtd; bruta += (i.valor * i.qtd); devVal += (i.valor * i.dev); }); });
-  
   document.getElementById('dash-total-pedidos').textContent = totalPed; document.getElementById('dash-receita').textContent = formatCurrency(bruta - devVal);
 
   const low = estoque.filter(i => i.qtd <= 3); const cont = document.getElementById('dash-low-stock');
@@ -1412,8 +1328,8 @@ function renderDash() {
 
 function formatDate(d) { if (!d) return '-'; const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`; }
 
-// Inicialização Direta (Garante que o ecrã de login funciona logo)
-initLockScreen();
+// Inicialização direta do sistema
+loadData();
 
 </script>
 </body>
