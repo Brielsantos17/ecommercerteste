@@ -1464,6 +1464,7 @@ function renderDash() {
   document.getElementById('dash-total-itens').textContent = estoque.length; document.getElementById('dash-total-clientes').textContent = clientes.length;
   let totalPed = 0, bruta = 0, devVal = 0;
   saidas.forEach(s => { (s.itens || [s]).forEach(i => { totalPed += i.qtd; bruta += (i.valor * i.qtd); devVal += (i.valor * i.dev); }); });
+  
   document.getElementById('dash-total-pedidos').textContent = totalPed; document.getElementById('dash-receita').textContent = formatCurrency(bruta - devVal);
 
   const low = estoque.filter(i => i.qtd <= 3); const cont = document.getElementById('dash-low-stock');
@@ -1481,7 +1482,7 @@ function renderDash() {
 
 function formatDate(d) { if (!d) return '-'; const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`; }
 
-// Inicialização Direta (Sem esperar o load de arquivos de terceiros)
+// Inicialização Direta (Garante que o ecrã de login funciona logo)
 initLockScreen();
 
 </script>
