@@ -175,6 +175,14 @@
   .modal-body { padding: 32px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .modal-footer { padding: 20px 32px; border-top: 1px solid var(--border); background: var(--off-white); display: flex; gap: 12px; justify-content: flex-end; }
 
+  /* ESTILO DO CARRINHO (PACOTE DE SAÍDA) */
+  .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--white); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+  .cart-item-info { flex: 1; }
+  .cart-item-price { font-weight: 700; color: var(--green); margin-right: 15px; }
+  .cart-btn-remove { background: #fee2e2; color: #991b1b; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.2s;}
+  .cart-btn-remove:hover { background: #fca5a5; }
+  .section-divider { border: none; border-top: 1px dashed var(--green-mid); margin: 24px 0; }
+
   /* RECIBO/NOTA PRINTABLE */
   .recibo-wrapper { font-family: monospace; color: #000; padding: 10px; background: #fff; }
   .recibo-logo-area { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 15px; }
@@ -222,7 +230,7 @@
   }
 
   /* =========================================================
-     🖨️ CONFIGURAÇÕES DE IMPRESSÃO - CORRIGIDO (CHAVES FECHADAS)
+     🖨️ CONFIGURAÇÕES DE IMPRESSÃO
      ========================================================= */
   @media print {
     body * { visibility: hidden; }
@@ -232,7 +240,6 @@
     .modal { box-shadow: none; max-width: 100%; border-radius: 0; }
     .modal-header, .modal-footer { display: none !important; }
     .recibo-wrapper { font-size: 12px; }
-    /* REMOVE A URL E A DATA DO CABEÇALHO/RODAPÉ */
     @page { margin: 0; }
   }
 
@@ -422,9 +429,9 @@
         <div class="card-sub">cadastrados</div>
       </div>
       <div class="card">
-        <div class="card-label">Entregues</div>
+        <div class="card-label">Itens Entregues</div>
         <div class="card-value" id="dash-total-pedidos">0</div>
-        <div class="card-sub">total saídas</div>
+        <div class="card-sub">total de peças</div>
       </div>
       <div class="card">
         <div class="card-label">Rec. Líquida</div>
@@ -497,8 +504,8 @@
   <div class="page" id="page-saidas">
     <div class="page-header">
       <div>
-        <h2>Saídas</h2>
-        <p>Pedidos entregues e devoluções</p>
+        <h2>Saídas (Pedidos)</h2>
+        <p>Pedidos fechados e pacotes entregues</p>
       </div>
       <button type="button" class="btn" onclick="openModal('modal-saida')">➕ Registrar Saída</button>
     </div>
@@ -558,9 +565,9 @@
         <thead>
           <tr>
             <th>Data</th>
-            <th>Item</th>
+            <th>Itens do Pacote</th>
             <th>Cliente/Pedido</th>
-            <th>Entregue</th>
+            <th>Peças</th>
             <th>Valor (R$)</th>
             <th>Ações</th>
           </tr>
@@ -745,16 +752,21 @@
 </div>
 
 <div class="modal-overlay" id="modal-saida">
-  <div class="modal">
+  <div class="modal" style="max-width: 650px;">
     <div class="modal-header">
-      <h3>📦 Registrar Saída</h3>
+      <h3>📦 Registrar Pacote de Saída</h3>
       <button class="close-btn" onclick="closeModal('modal-saida')">&times;</button>
     </div>
     <div class="modal-body">
-      <div class="form-row">
+      
+      <div class="form-row cols-2">
         <div class="form-group">
           <label>Data *</label>
           <input type="date" id="saida-data">
+        </div>
+        <div class="form-group">
+          <label>Nº Pedido (Ex: Shopee)</label>
+          <input type="text" id="saida-pedido" placeholder="Opcional">
         </div>
       </div>
       <div class="form-row">
@@ -762,42 +774,47 @@
           <label>Cliente Associado</label>
           <select id="saida-cliente">
             <option value="">Consumidor Final (Sem cadastro)</option>
-            </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Item *</label>
-          <select id="saida-item" onchange="autoPreco()">
-            <option value="">Selecione o item</option>
           </select>
         </div>
       </div>
-      <div class="form-row cols-3">
-        <div class="form-group">
-          <label>Entregue *</label>
-          <input type="number" id="saida-qtd" placeholder="1" min="1" value="1">
+
+      <hr class="section-divider">
+
+      <h4 style="color:var(--green); margin-bottom:12px; font-family:'Playfair Display', serif; font-size:18px;">🛒 Adicionar Item ao Pacote</h4>
+      <div style="background:var(--off-white); padding:16px; border-radius:12px; border:1px solid var(--border); margin-bottom:16px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Selecionar Item *</label>
+            <select id="saida-item" onchange="autoPreco()">
+              <option value="">Selecione o item do estoque</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Devolução</label>
-          <input type="number" id="saida-dev" placeholder="0" min="0" value="0">
+        <div class="form-row cols-3">
+          <div class="form-group">
+            <label>Entregue *</label>
+            <input type="number" id="saida-qtd" placeholder="1" min="1" value="1">
+          </div>
+          <div class="form-group">
+            <label>Devolução</label>
+            <input type="number" id="saida-dev" placeholder="0" min="0" value="0">
+          </div>
+          <div class="form-group full-mobile">
+            <label>Valor Unitário</label>
+            <input type="text" inputmode="decimal" id="saida-valor" placeholder="0,00">
+          </div>
         </div>
-        <div class="form-group full-mobile">
-          <label>Valor Unitário</label>
-          <input type="text" inputmode="decimal" id="saida-valor" placeholder="0,00">
-        </div>
+        <button type="button" class="btn btn-outline" style="width: 100%;" onclick="adicionarAoCarrinho()">➕ Colocar no Pacote</button>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nº Pedido (Ex: Shopee)</label>
-          <input type="text" id="saida-pedido" placeholder="Ex: 250220XXXXX">
+
+      <div id="carrinho-list">
         </div>
-      </div>
+      
       <input type="hidden" id="saida-edit-id">
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline" onclick="closeModal('modal-saida')">Cancelar</button>
-      <button type="button" class="btn" onclick="salvarSaida()">💾 Registrar</button>
+      <button type="button" class="btn" onclick="salvarSaida()">💾 Registrar Pacote Completo</button>
     </div>
   </div>
 </div>
@@ -812,7 +829,7 @@
       <div id="print-area" class="recibo-wrapper">
         <div class="recibo-logo-area">
           <h1>Ateliê 03</h1>
-          <p>Documento de Confirmação</p>
+          <p>Documento de Confirmação de Pacote</p>
         </div>
         
         <div class="recibo-section">
@@ -820,29 +837,24 @@
           <p><strong>CPF:</strong> <span id="rec-cliente-cpf">-</span></p>
           <p><strong>Endereço:</strong> <span id="rec-cliente-end">-</span></p>
           <p><strong>Data de Emissão:</strong> <span id="rec-data">-</span></p>
+          <p><strong>Pedido/Ref:</strong> <span id="rec-pedido">-</span></p>
         </div>
 
         <table class="recibo-table">
           <thead>
             <tr>
-              <th>Cód. Pedido</th>
               <th>Descrição do Item</th>
-              <th>Qtd</th>
+              <th style="text-align: center;">Qtd</th>
+              <th style="text-align: right;">Val. Unit</th>
               <th style="text-align: right;">Total</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td id="rec-pedido">-</td>
-              <td id="rec-item">-</td>
-              <td id="rec-qtd">-</td>
-              <td id="rec-valor" style="text-align: right;">-</td>
-            </tr>
-          </tbody>
+          <tbody id="recibo-tbody-itens">
+            </tbody>
         </table>
 
         <div class="recibo-total">
-          TOTAL: <span id="rec-total-geral">R$ 0,00</span>
+          TOTAL DO PACOTE: <span id="rec-total-geral">R$ 0,00</span>
         </div>
 
         <div class="recibo-assinatura">
@@ -874,7 +886,6 @@ const firebaseConfig = {
   measurementId: "G-9FMVXGHBVJ"
 };
 
-// Inicializa o Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
@@ -883,7 +894,8 @@ const db = firebase.firestore();
 // ==========================================
 let estoque = [];
 let saidas = [];
-let clientes = []; // Novo array para clientes
+let clientes = []; 
+let carrinhoAtual = []; // NOVO: Armazena os itens da saída atual temporariamente
 
 // ==========================================
 // TELA DE BLOQUEIO (LOGICA 1 VEZ POR DIA)
@@ -898,7 +910,7 @@ function initLockScreen() {
 
   if (lastLoginDate === today) {
     lockScreen.style.display = 'none';
-    loadData(); // Já está logado, carrega os dados
+    loadData(); 
   } else {
     lockScreen.style.display = 'flex';
     lockScreen.classList.remove('unlocked');
@@ -908,11 +920,8 @@ function initLockScreen() {
 function updateDots() {
   const dots = document.querySelectorAll('#pin-dots .dot');
   dots.forEach((dot, index) => {
-    if (index < senhaAtual.length) {
-      dot.classList.add('filled');
-    } else {
-      dot.classList.remove('filled');
-    }
+    if (index < senhaAtual.length) { dot.classList.add('filled'); } 
+    else { dot.classList.remove('filled'); }
   });
 }
 
@@ -949,7 +958,7 @@ function checkPin() {
     hiddenPin.blur(); 
     setTimeout(() => { 
       lockScreen.style.display = 'none'; 
-      loadData(); // Carrega os dados da nuvem ao desbloquear
+      loadData(); 
     }, 500);
   } else {
     dotsContainer.classList.add('error-shake');
@@ -998,7 +1007,7 @@ async function loadData() {
       if (docSnap.exists) {
         estoque = docSnap.data().estoque || [];
         saidas = docSnap.data().saidas || [];
-        clientes = docSnap.data().clientes || []; // Carrega os clientes
+        clientes = docSnap.data().clientes || []; 
       }
       syncStatus.innerText = '✅ Sincronizado';
       setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
@@ -1039,20 +1048,15 @@ function save() {
       syncStatus.innerText = '✅ Salvo';
       setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
     }).catch(error => {
-      console.error("Erro ao salvar no Firebase:", error);
-      syncStatus.innerText = '❌ Erro ao salvar';
+      syncStatus.innerText = '❌ Erro';
       setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
     });
   }
 }
 
-// ==========================================
-// ACORDEÃO RELATÓRIOS
-// ==========================================
 function toggleRelatorios() {
   const content = document.getElementById('relatorios-content');
   const icon = document.getElementById('toggle-relatorios-icon');
-  
   if (content.style.display === 'none') {
     content.style.display = 'block';
     icon.style.transform = 'rotate(0deg)';
@@ -1085,9 +1089,8 @@ function showPage(name, el) {
   const page = document.getElementById('page-' + name);
   if (page) page.classList.add('active');
   
-  if(el) {
-    el.classList.add('active');
-  } else {
+  if(el) { el.classList.add('active'); } 
+  else {
     const navItem = document.querySelector(`.nav-item[data-target="${name}"]`);
     if(navItem) navItem.classList.add('active');
   }
@@ -1106,6 +1109,8 @@ function openModal(id) {
   if (id === 'modal-saida') {
       populateSaidaSelect();
       populateClienteSelect();
+      carrinhoAtual = []; // Reseta o carrinho sempre que abrir um novo pacote
+      renderCarrinho();
   }
   document.getElementById(id).classList.add('open');
 }
@@ -1118,7 +1123,7 @@ function closeModal(id) {
 }
 
 // ==========================================
-// MÓDULO DE CLIENTES
+// MÓDULO DE CLIENTES E ESTOQUE (MANTIDOS)
 // ==========================================
 function salvarCliente() {
   const nome = document.getElementById('cli-nome').value.trim();
@@ -1132,9 +1137,7 @@ function salvarCliente() {
   if (editId) {
     const idx = clientes.findIndex(c => c.id == editId);
     if (idx > -1) clientes[idx] = { ...clientes[idx], nome, cpf, fone, endereco };
-  } else {
-    clientes.push({ id: Date.now(), nome, cpf, fone, endereco });
-  }
+  } else { clientes.push({ id: Date.now(), nome, cpf, fone, endereco }); }
   
   save(); renderClientes(); renderDash(); closeModal('modal-cliente');
 }
@@ -1142,10 +1145,9 @@ function salvarCliente() {
 function renderClientes() {
   const tbody = document.getElementById('clientes-body');
   if (!clientes.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">👥</div><p>Nenhum cliente cadastrado ainda.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">👥</div><p>Nenhum cliente cadastrado.</p></div></td></tr>';
     return;
   }
-  
   tbody.innerHTML = clientes.map(c => `
     <tr>
       <td data-label="Nome"><strong>${c.nome}</strong></td>
@@ -1156,8 +1158,7 @@ function renderClientes() {
         <button type="button" class="btn btn-sm btn-outline" onclick="editCliente(${c.id})">✏️ Editar</button>
         <button type="button" class="btn btn-sm btn-danger" onclick="deleteCliente(${c.id})">🗑️</button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`).join('');
 }
 
 function editCliente(id) {
@@ -1172,13 +1173,9 @@ function editCliente(id) {
 }
 
 function deleteCliente(id) {
-  // Verifica se tem saída associada ao cliente
   const temVenda = saidas.some(s => s.clienteId == id);
-  if (temVenda) {
-    alert('Ação bloqueada: Este cliente possui histórico de pedidos. Exclua a saída primeiro.');
-    return;
-  }
-  if (!confirm('Tem certeza que deseja deletar este cliente?')) return;
+  if (temVenda) { alert('Ação bloqueada: Este cliente possui histórico de pedidos.'); return; }
+  if (!confirm('Deletar este cliente?')) return;
   clientes = clientes.filter(c => c.id != id);
   save(); renderClientes(); renderDash();
 }
@@ -1193,10 +1190,6 @@ function populateClienteSelect() {
     clientes.map(c => `<option value="${c.id}">${c.nome} - ${c.fone}</option>`).join('');
 }
 
-
-// ==========================================
-// MÓDULO DE ESTOQUE
-// ==========================================
 function salvarItem(manterAberto = false) {
   const nome = document.getElementById('item-nome').value.trim();
   const tamanho = document.getElementById('item-tamanho').value;
@@ -1211,41 +1204,31 @@ function salvarItem(manterAberto = false) {
   if (editId) {
     const idx = estoque.findIndex(i => i.id == editId);
     if (idx > -1) estoque[idx] = { ...estoque[idx], nome, tamanho, qtd, preco, cor, sku };
-  } else {
-    estoque.push({ id: Date.now(), nome, tamanho, qtd, preco, cor, sku });
-  }
+  } else { estoque.push({ id: Date.now(), nome, tamanho, qtd, preco, cor, sku }); }
   
   save(); renderEstoque(); renderDash();
-  
-  if (manterAberto) {
-    resetItemForm();
-    document.getElementById('item-nome').focus(); 
-    document.querySelector('#modal-item .modal-body').scrollTo(0,0);
-  } else {
-    closeModal('modal-item');
-  }
+  if (manterAberto) { resetItemForm(); document.getElementById('item-nome').focus(); } 
+  else { closeModal('modal-item'); }
 }
 
 function renderEstoque() {
   const tbody = document.getElementById('estoque-body');
   if (!estoque.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">👙</div><p>Nenhum item cadastrado ainda.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">👙</div><p>Nenhum item cadastrado.</p></div></td></tr>';
     return;
   }
   const sizeBadge = { PP:'badge-pp', P:'badge-p', M:'badge-m', G:'badge-g', GG:'badge-gg', Único:'badge-u' };
-  
   tbody.innerHTML = estoque.map(i => `
     <tr>
-      <td data-label="Item"><strong>${i.nome}</strong>${i.cor ? `<br><small style="color:var(--gray);font-weight:normal">${i.cor}</small>` : ''}${i.sku ? `<br><small style="color:var(--gray);font-weight:normal">${i.sku}</small>` : ''}</td>
+      <td data-label="Item"><strong>${i.nome}</strong>${i.cor ? `<br><small style="color:var(--gray);font-weight:normal">${i.cor}</small>` : ''}</td>
       <td data-label="Tamanho"><span class="badge ${sizeBadge[i.tamanho]||'badge-u'}">${i.tamanho}</span></td>
       <td data-label="Quantidade"><span style="font-weight:700;color:${i.qtd<=3?'#e63946':'var(--green)'}">${i.qtd}</span>${i.qtd<=3?'<span style="font-size:11px;color:#e63946;margin-left:5px;">⚠️ Baixo</span>':''}</td>
       <td data-label="Preço">${i.preco ? formatCurrency(i.preco) : formatCurrency(0)}</td>
       <td data-label="Ações">
-        <button type="button" class="btn btn-sm btn-outline" onclick="editItem(${i.id})">✏️ Editar</button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="editItem(${i.id})">✏️</button>
         <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem(${i.id})">🗑️</button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`).join('');
 }
 
 function editItem(id) {
@@ -1262,12 +1245,13 @@ function editItem(id) {
 }
 
 function deleteItem(id) {
-  const temSaida = saidas.some(s => s.itemId == id);
-  if (temSaida) {
-    alert('Ação bloqueada: Este item possui histórico de vendas. Exclua a saída primeiro.');
-    return;
-  }
-  if (!confirm('Tem certeza que deseja deletar este item?')) return;
+  // Verifica histórico nos pacotes também (antigos ou novos)
+  const temSaida = saidas.some(s => {
+    const itensS = s.itens || [s];
+    return itensS.some(oi => oi.itemId == id);
+  });
+  if (temSaida) { alert('Ação bloqueada: Este item possui histórico em pacotes/saídas.'); return; }
+  if (!confirm('Deletar este item?')) return;
   estoque = estoque.filter(i => i.id != id);
   save(); renderEstoque(); renderDash();
 }
@@ -1278,13 +1262,12 @@ function resetItemForm() {
 
 
 // ==========================================
-// MÓDULO DE SAÍDAS & RECIBOS
+// MÓDULO DE SAÍDAS & RECIBOS (NOVO SISTEMA DE PACOTE/CARRINHO)
 // ==========================================
 function populateSaidaSelect() {
   const sel = document.getElementById('saida-item');
-  sel.innerHTML = '<option value="">Selecione o item</option>' +
+  sel.innerHTML = '<option value="">Selecione o item do estoque</option>' +
     estoque.map(i => {
-      // ADICIONADO: Exibe a cor do item no dropdown
       const textoCor = i.cor ? ` - ${i.cor}` : '';
       return `<option value="${i.id}" data-preco="${i.preco}">${i.nome} - ${i.tamanho}${textoCor} (Estq: ${i.qtd})</option>`;
     }).join('');
@@ -1299,51 +1282,141 @@ function autoPreco() {
   }
 }
 
-function salvarSaida() {
-  const data = document.getElementById('saida-data').value;
-  const clienteId = document.getElementById('saida-cliente').value;
+function adicionarAoCarrinho() {
   const itemId = document.getElementById('saida-item').value;
   const qtd = parseInt(document.getElementById('saida-qtd').value) || 1;
   const dev = parseInt(document.getElementById('saida-dev').value) || 0;
   const valor = readNumberInput('saida-valor');
+
+  if (!itemId) { alert('Selecione um item primeiro.'); return; }
+  if (dev > qtd) { alert('Devolução não pode ser maior que entregue.'); return; }
+
+  const itemEstoque = estoque.find(i => i.id == itemId);
+  if (!itemEstoque) return;
+
+  // Verifica se já tem no carrinho para acumular quantidade se o usuário selecionar de novo
+  const existente = carrinhoAtual.find(c => c.itemId == itemId);
+  if (existente) {
+      existente.qtd += qtd;
+      existente.dev += dev;
+  } else {
+      carrinhoAtual.push({
+          itemId: itemId,
+          itemNome: itemEstoque.nome,
+          itemTamanho: itemEstoque.tamanho,
+          itemCor: itemEstoque.cor,
+          qtd: qtd,
+          dev: dev,
+          valor: valor
+      });
+  }
+
+  // Limpa os campos do item
+  document.getElementById('saida-item').value = '';
+  document.getElementById('saida-qtd').value = 1;
+  document.getElementById('saida-dev').value = 0;
+  document.getElementById('saida-valor').value = '';
+
+  renderCarrinho();
+}
+
+function removerDoCarrinho(index) {
+  carrinhoAtual.splice(index, 1);
+  renderCarrinho();
+}
+
+function renderCarrinho() {
+  const divList = document.getElementById('carrinho-list');
+  if (carrinhoAtual.length === 0) {
+      divList.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--gray); font-size:13px; border:1px dashed var(--border); border-radius:10px;">Pacote vazio. Adicione itens acima.</div>';
+      return;
+  }
+
+  let totalPacote = 0;
+  let html = '';
+  carrinhoAtual.forEach((c, index) => {
+      const subtotal = c.valor * c.qtd;
+      totalPacote += subtotal;
+      const textoCor = c.itemCor ? ` - ${c.itemCor}` : '';
+      html += `
+      <div class="cart-item">
+          <div class="cart-item-info">
+              <strong>${c.itemNome}</strong> (Tam: ${c.itemTamanho}${textoCor})<br>
+              <span style="color: var(--gray); font-size:12px;">Entregue: ${c.qtd} | Dev: ${c.dev}</span>
+          </div>
+          <div class="cart-item-price">${formatCurrency(subtotal)}</div>
+          <button class="cart-btn-remove" onclick="removerDoCarrinho(${index})">X</button>
+      </div>`;
+  });
+
+  html += `<div style="text-align:right; font-weight:bold; color:var(--green); font-size:16px; margin-top:10px;">Total do Pacote: ${formatCurrency(totalPacote)}</div>`;
+  divList.innerHTML = html;
+}
+
+function salvarSaida() {
+  const data = document.getElementById('saida-data').value;
+  const clienteId = document.getElementById('saida-cliente').value;
   const pedido = document.getElementById('saida-pedido').value.trim();
   const editId = document.getElementById('saida-edit-id').value;
 
-  if (!data || !itemId) { alert('Atenção: Preencha Data e Item!'); return; }
-  if (dev > qtd) { alert('Atenção: A devolução não pode ser maior que a quantidade entregue.'); return; }
+  if (!data) { alert('Atenção: A Data do pedido é obrigatória!'); return; }
+  if (carrinhoAtual.length === 0) { alert('Atenção: O pacote está vazio. Adicione itens antes de registrar.'); return; }
 
-  const item = estoque.find(i => i.id == itemId);
-  if (!item) return;
+  // VALIDAÇÃO DE ESTOQUE GLOBAL
+  let tempStock = {};
+  estoque.forEach(i => tempStock[i.id] = i.qtd);
 
-  const deducaoPretendida = qtd - dev;
-  let estoqueDisponivel = item.qtd;
-
+  // Se for edição, devolvemos o estoque antigo virtualmente primeiro
   if (editId) {
-    const oldSaida = saidas.find(s => s.id == editId);
-    if (oldSaida && oldSaida.itemId == itemId) {
-      estoqueDisponivel += (oldSaida.qtd - oldSaida.dev);
-    }
+     const oldS = saidas.find(x => x.id == editId);
+     const oldItens = oldS.itens || [oldS]; // Retrocompatibilidade
+     oldItens.forEach(oi => {
+        if (tempStock[oi.itemId] !== undefined) {
+           tempStock[oi.itemId] += (oi.qtd - (oi.dev || 0));
+        }
+     });
   }
 
-  if (deducaoPretendida > estoqueDisponivel) {
-    alert(`Atenção: Estoque insuficiente! Você tem apenas ${estoqueDisponivel} unidade(s) disponíveis.`);
-    return;
+  // Desconta os itens do carrinho atual virtualmente
+  for (let ci of carrinhoAtual) {
+     if (tempStock[ci.itemId] !== undefined) {
+         tempStock[ci.itemId] -= (ci.qtd - (ci.dev || 0));
+         if (tempStock[ci.itemId] < 0) {
+             alert(`Estoque insuficiente para o item: ${ci.itemNome}`);
+             return;
+         }
+     }
   }
 
+  // SE PASSOU NA VALIDAÇÃO: Aplicar as mudanças reais de estoque
   if (editId) {
-    const idx = saidas.findIndex(s => s.id == editId);
-    if (idx > -1) {
-      const oldSaida = saidas[idx];
-      const oldItem = estoque.find(i => i.id == oldSaida.itemId);
-      if (oldItem) oldItem.qtd += (oldSaida.qtd - oldSaida.dev);
-      if (item) item.qtd = Math.max(0, item.qtd - deducaoPretendida);
-      // Aqui garantimos que a propriedade itemCor será salva no histórico da saída
-      saidas[idx] = { ...saidas[idx], data, clienteId, itemId, itemNome: item?.nome, itemTamanho: item?.tamanho, itemCor: item?.cor, qtd, dev, valor, pedido };
-    }
+     const oldS = saidas.find(x => x.id == editId);
+     const oldItens = oldS.itens || [oldS];
+     oldItens.forEach(oi => {
+        const item = estoque.find(i => i.id == oi.itemId);
+        if (item) item.qtd += (oi.qtd - (oi.dev || 0));
+     });
+  }
+
+  carrinhoAtual.forEach(ci => {
+     const item = estoque.find(i => i.id == ci.itemId);
+     if (item) item.qtd -= (ci.qtd - (ci.dev || 0));
+  });
+
+  // SALVAR OBJETO SAIDA COMO PACOTE
+  const novaSaida = {
+     id: editId ? editId : Date.now(),
+     data: data,
+     clienteId: clienteId,
+     pedido: pedido,
+     itens: [...carrinhoAtual] // O array de itens do pacote
+  };
+
+  if (editId) {
+     const idx = saidas.findIndex(x => x.id == editId);
+     saidas[idx] = novaSaida;
   } else {
-    // E aqui também passamos a itemCor
-    saidas.push({ id: Date.now(), data, clienteId, itemId, itemNome: item?.nome, itemTamanho: item?.tamanho, itemCor: item?.cor, qtd, dev, valor, pedido });
-    if (item) { item.qtd = Math.max(0, item.qtd - deducaoPretendida); }
+     saidas.push(novaSaida);
   }
   
   save(); renderSaidas(); renderDash(); closeModal('modal-saida');
@@ -1356,252 +1429,19 @@ function editSaida(id) {
   populateClienteSelect();
   document.getElementById('saida-data').value = s.data;
   document.getElementById('saida-cliente').value = s.clienteId || '';
-  document.getElementById('saida-item').value = s.itemId;
-  document.getElementById('saida-qtd').value = s.qtd;
-  document.getElementById('saida-dev').value = s.dev;
-  document.getElementById('saida-valor').value = s.valor ? s.valor.toFixed(2).replace('.', ',') : '';
   document.getElementById('saida-pedido').value = s.pedido || '';
   document.getElementById('saida-edit-id').value = s.id;
+  
+  // Retrocompatibilidade para edição: Se a saída for do formato antigo, cria o array pra ela
+  carrinhoAtual = s.itens ? JSON.parse(JSON.stringify(s.itens)) : [{
+      itemId: s.itemId, itemNome: s.itemNome, itemTamanho: s.itemTamanho, itemCor: s.itemCor, qtd: s.qtd, dev: s.dev, valor: s.valor
+  }];
+  
+  renderCarrinho();
   openModal('modal-saida');
 }
 
-// LOGICA DO RECIBO COM COR DO ITEM
+// RECIBO COMPATÍVEL COM PACOTES
 function gerarRecibo(idSaida) {
   const s = saidas.find(x => x.id == idSaida);
-  if(!s) return;
-  
-  const c = clientes.find(x => x.id == s.clienteId);
-  const dataPtBr = formatDate(s.data);
-
-  document.getElementById('rec-cliente-nome').innerText = c ? c.nome : 'Consumidor Final';
-  document.getElementById('rec-cliente-cpf').innerText = c ? (c.cpf || 'Não informado') : '-';
-  document.getElementById('rec-cliente-end').innerText = c ? (c.endereco || 'Não informado') : '-';
-  document.getElementById('rec-data').innerText = dataPtBr;
-  
-  document.getElementById('rec-pedido').innerText = s.pedido || s.id;
-  
-  // Tratativa para puxar a cor da saída salva ou, como fallback, do item atual no estoque
-  let corDoItem = s.itemCor;
-  if (!corDoItem) {
-    const itemAtual = estoque.find(i => i.id == s.itemId);
-    if (itemAtual && itemAtual.cor) {
-      corDoItem = itemAtual.cor;
-    }
-  }
-  
-  const textoCor = corDoItem ? ` - ${corDoItem}` : '';
-  document.getElementById('rec-item').innerText = `${s.itemNome} - Tam: ${s.itemTamanho}${textoCor}`;
-  
-  document.getElementById('rec-qtd').innerText = s.qtd;
-  
-  const total = s.valor * s.qtd;
-  document.getElementById('rec-valor').innerText = formatCurrency(total);
-  document.getElementById('rec-total-geral').innerText = formatCurrency(total);
-  
-  document.getElementById('rec-assinatura-nome').innerText = c ? c.nome : 'Assinatura do Cliente';
-
-  openModal('modal-recibo');
-}
-
-function getFiltredSaidas() {
-  let list = [...saidas];
-  const ini = document.getElementById('filter-inicio')?.value;
-  const fim = document.getElementById('filter-fim')?.value;
-  if (ini) list = list.filter(s => s.data >= ini);
-  if (fim) list = list.filter(s => s.data <= fim);
-  return list.sort((a,b) => b.data.localeCompare(a.data));
-}
-
-function renderSaidas() {
-  const tbody = document.getElementById('saidas-body');
-  const list = getFiltredSaidas();
-  if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">📦</div><p>Nenhuma saída registrada ainda.</p></div></td></tr>';
-    document.getElementById('saidas-resumo').innerHTML = '';
-    return;
-  }
-
-  const totalPedidos = list.reduce((s,x) => s + x.qtd, 0);
-  const totalDev = list.reduce((s,x) => s + x.dev, 0);
-
-  document.getElementById('saidas-resumo').innerHTML = `
-    <div style="background:var(--green-pale);border-radius:8px;padding:8px 12px;font-size:12px;">
-      <strong style="color:var(--green)">📦 ${list.length} registros</strong>
-    </div>
-    <div style="background:var(--green-pale);border-radius:8px;padding:8px 12px;font-size:12px;">
-      <strong style="color:var(--green)">✅ ${totalPedidos} entregues</strong>
-    </div>
-    <div style="background:#fee2e2;border-radius:8px;padding:8px 12px;font-size:12px;">
-      <strong style="color:#991b1b">↩️ ${totalDev} devs.</strong>
-    </div>
-  `;
-
-  tbody.innerHTML = list.map(s => {
-    const c = clientes.find(x => x.id == s.clienteId);
-    const nomeCli = c ? c.nome : 'Consumidor';
-    return `
-    <tr>
-      <td data-label="Data">${formatDate(s.data)}</td>
-      <td data-label="Item">${s.itemNome || '-'}</td>
-      <td data-label="Cliente/Ped">${nomeCli}<br><small style="color:var(--gray)">${s.pedido||'Avulso'}</small></td>
-      <td data-label="Entregue" style="font-weight:700;color:var(--green)">${s.qtd} ${s.dev > 0 ? `<span class="badge badge-dev">↩️ -${s.dev}</span>` : ''}</td>
-      <td data-label="Valor">${formatCurrency(s.valor)}</td>
-      <td data-label="Ações">
-        <button type="button" class="btn btn-sm" style="background:#3b82f6;color:white;" onclick="gerarRecibo(${s.id})" title="Gerar Recibo">🧾 PDF</button>
-        <button type="button" class="btn btn-sm btn-outline" onclick="editSaida(${s.id})">✏️ Editar</button>
-        <button type="button" class="btn btn-sm btn-danger" onclick="deleteSaida(${s.id})">🗑️</button>
-      </td>
-    </tr>
-  `}).join('');
-}
-
-function deleteSaida(id) {
-  if (!confirm('Deletar registro? O estoque será devolvido.')) return;
-  const s = saidas.find(x => x.id == id);
-  if (s) {
-      const item = estoque.find(i => i.id == s.itemId);
-      if (item) item.qtd += (s.qtd - s.dev);
-  }
-  saidas = saidas.filter(x => x.id != id);
-  save(); renderSaidas(); renderDash();
-}
-
-function resetSaidaForm() {
-  ['saida-data','saida-cliente','saida-item','saida-qtd','saida-dev','saida-valor','saida-pedido','saida-edit-id'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  document.getElementById('saida-qtd').value = 1;
-  document.getElementById('saida-dev').value = 0;
-}
-
-function limparSelectsEFiltrar() {
-  document.getElementById('filter-mes').value = '';
-  document.getElementById('filter-ano').value = '';
-  renderSaidas();
-}
-
-function aplicarFiltroMes() {
-  const mes = document.getElementById('filter-mes').value;
-  let ano = document.getElementById('filter-ano').value;
-  if (mes && !ano) {
-    ano = new Date().getFullYear().toString();
-    document.getElementById('filter-ano').value = ano;
-  }
-  if (ano) {
-    if (mes) {
-      document.getElementById('filter-inicio').value = `${ano}-${mes}-01`;
-      const lastDay = new Date(ano, mes, 0).getDate();
-      document.getElementById('filter-fim').value = `${ano}-${mes}-${lastDay}`;
-    } else {
-      document.getElementById('filter-inicio').value = `${ano}-01-01`;
-      document.getElementById('filter-fim').value = `${ano}-12-31`;
-    }
-  } else {
-    if (!mes) {
-       document.getElementById('filter-inicio').value = '';
-       document.getElementById('filter-fim').value = '';
-    }
-  }
-  renderSaidas();
-}
-
-function limparFiltros() {
-  document.getElementById('filter-inicio').value = '';
-  document.getElementById('filter-fim').value = '';
-  document.getElementById('filter-mes').value = '';
-  document.getElementById('filter-ano').value = '';
-  renderSaidas();
-}
-
-// ==========================================
-// MÓDULO FINANCEIRO & DASHBOARD
-// ==========================================
-function renderFinanceiro() {
-  const mes = document.getElementById('fin-mes').value;
-  const ano = document.getElementById('fin-ano').value;
-  let list = [...saidas];
-  
-  if (mes && ano) { list = list.filter(s => s.data.startsWith(`${ano}-${mes}`)); }
-  else if (ano) { list = list.filter(s => s.data.startsWith(ano)); }
-  else if (mes) { list = list.filter(s => s.data.substring(5, 7) === mes); }
-
-  const bruta = list.reduce((s,x) => s + (x.valor * x.qtd), 0);
-  const devVal = list.reduce((s,x) => s + (x.valor * x.dev), 0);
-  const liquida = bruta - devVal;
-
-  document.getElementById('fin-bruta').textContent = formatCurrency(bruta);
-  document.getElementById('fin-dev').textContent = formatCurrency(devVal);
-  document.getElementById('fin-liquida').textContent = formatCurrency(liquida);
-
-  const map = {};
-  list.forEach(s => {
-    const key = `${s.itemId}`;
-    if (!map[key]) map[key] = { nome: s.itemNome, tam: s.itemTamanho, qtd: 0, dev: 0, val: 0 };
-    map[key].qtd += s.qtd;
-    map[key].dev += s.dev;
-    map[key].val += s.valor * (s.qtd - s.dev); 
-  });
-
-  const tbody = document.getElementById('fin-body');
-  const rows = Object.values(map);
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><p>Nenhum dado para o período.</p></div></td></tr>';
-  } else {
-    tbody.innerHTML = rows.map(r => `
-      <tr>
-        <td data-label="Item">${r.nome}</td>
-        <td data-label="Tamanho">${r.tam}</td>
-        <td data-label="Qtd Vendida" style="font-weight:700;color:var(--green)">${r.qtd}</td>
-        <td data-label="Devoluções" style="color:#e63946">${r.dev}</td>
-        <td data-label="Receita Líq." style="font-weight:700">${formatCurrency(r.val)}</td>
-      </tr>
-    `).join('');
-  }
-}
-
-function renderDash() {
-  document.getElementById('dash-total-itens').textContent = estoque.length;
-  document.getElementById('dash-total-clientes').textContent = clientes.length;
-
-  const totalPed = saidas.reduce((s,x) => s + x.qtd, 0);
-  const totalDev = saidas.reduce((s,x) => s + x.dev, 0);
-  
-  const bruta = saidas.reduce((s,x) => s + (x.valor * x.qtd), 0);
-  const devVal = saidas.reduce((s,x) => s + (x.valor * x.dev), 0);
-  const liquida = bruta - devVal;
-
-  document.getElementById('dash-total-pedidos').textContent = totalPed;
-  document.getElementById('dash-total-dev').textContent = totalDev;
-  document.getElementById('dash-receita').textContent = formatCurrency(liquida);
-
-  const low = estoque.filter(i => i.qtd <= 3);
-  const cont = document.getElementById('dash-low-stock');
-  if (!low.length) {
-    cont.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><p>Tudo certo no estoque.</p></div>';
-  } else {
-    const sizeBadge = { PP:'badge-pp', P:'badge-p', M:'badge-m', G:'badge-g', GG:'badge-gg', Único:'badge-u' };
-    cont.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;">${low.map(i=>`
-      <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:16px;">
-        <div style="font-weight:700;color:#1a2e23;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${i.nome}">${i.nome}</div>
-        <div style="margin-top:6px"><span class="badge ${sizeBadge[i.tamanho]||'badge-u'}">${i.tamanho}</span></div>
-        <div style="margin-top:10px;font-size:13px;color:#e63946;font-weight:700">⚠️ ${i.qtd} rest.</div>
-      </div>
-    `).join('')}</div>`;
-  }
-}
-
-function formatDate(d) {
-  if (!d) return '-';
-  const [y,m,day] = d.split('-');
-  return `${day}/${m}/${y}`;
-}
-
-// INIT 
-renderDash(); 
-const abaSalva = localStorage.getItem('atelie_aba_atual') || 'dashboard';
-showPage(abaSalva);
-
-</script>
-</body>
-</html>
+  if
