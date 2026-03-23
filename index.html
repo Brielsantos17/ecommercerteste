@@ -1079,7 +1079,6 @@ function openModal(id) {
   if (id === 'modal-saida') {
       populateClienteSelect();
       popularDropdownItens();
-      // Limpar se for nova saída
       if (!document.getElementById('saida-edit-id').value) {
           document.getElementById('saida-data').value = new Date().toISOString().split('T')[0];
           carrinhoAtual = [];
@@ -1420,14 +1419,12 @@ function editSaida(id) {
   const s = saidas.find(x => x.id == id);
   if (!s) return;
   
-  // Seta o ID ANTES de abrir o Modal, para o sistema NÃO zerar o carrinho na nova condicional do openModal
   document.getElementById('saida-edit-id').value = s.id;
   
   document.getElementById('saida-data').value = s.data;
   document.getElementById('saida-cliente').value = s.clienteId || '';
   document.getElementById('saida-pedido').value = s.pedido || '';
   
-  // Retrocompatibilidade para edição
   carrinhoAtual = s.itens ? JSON.parse(JSON.stringify(s.itens)) : [{
       itemId: s.itemId, itemNome: s.itemNome, itemTamanho: s.itemTamanho, itemCor: s.itemCor, qtd: s.qtd, dev: s.dev, valor: s.valor
   }];
@@ -1445,15 +1442,6 @@ function resetSaidaForm() {
   carrinhoAtual = [];
 }
 
-// ==========================================
-// GERADOR DE PDF REAL E SEM QUEBRA DE PÁGINA
-// ==========================================
-// ==========================================
-// GERADOR DE PDF REAL E SEM QUEBRA DE PÁGINA
-// ==========================================
-// ==========================================
-// GERADOR DE PDF REAL E SEM QUEBRA DE PÁGINA
-// ==========================================
 // ==========================================
 // GERADOR DE PDF REAL E SEM QUEBRA DE PÁGINA
 // ==========================================
@@ -1490,7 +1478,7 @@ function baixarPDF() {
     .pdf-clone-style .recibo-table thead { display: table-header-group !important; }
     .pdf-clone-style .recibo-table tbody { display: table-row-group !important; }
     .pdf-clone-style .recibo-table tr { display: table-row !important; background: transparent !important; box-shadow: none !important; border: none !important; margin: 0 !important; }
-    .pdf-clone-style .recibo-table th, .pdf-clone-style .recibo-table td { display: table-cell !important; padding: 12px 8px !important; border: none !important; border-bottom: 1px dashed #ccc !important; vertical-align: middle !important; font-size: 15px !important; }
+    .pdf-clone-style .recibo-table th, .pdf-clone-style .recibo-table td { display: table-cell !important; padding: 12px 8px !important; border: none !important; border-bottom: 1px dashed #ccc !important; vertical-align: middle !important; font-size: 15px !important; text-align: left !important; }
     
     /* Esconde os rótulos de celular gerados no CSS ::before */
     .pdf-clone-style .recibo-table td::before { display: none !important; }
@@ -1529,26 +1517,7 @@ function baixarPDF() {
       document.head.removeChild(styleFix);
   });
 }
-  
-  // 3. Gera o PDF do elemento real visível e depois restaura tudo
-  html2pdf().set(opt).from(element).save().then(() => {
-      btn.innerText = textoOriginal;
-      modal.style.maxHeight = oldMaxHeight;
-      modalBody.style.overflowY = oldOverflow;
-      element.style.width = oldWidth;
-      element.style.padding = oldPadding;
-      document.head.removeChild(styleFix);
-  }).catch(err => {
-      btn.innerText = "❌ Erro ao baixar";
-      console.error(err);
-      setTimeout(() => { btn.innerText = textoOriginal; }, 2000);
-      modal.style.maxHeight = oldMaxHeight;
-      modalBody.style.overflowY = oldOverflow;
-      element.style.width = oldWidth;
-      element.style.padding = oldPadding;
-      document.head.removeChild(styleFix);
-  });
-}
+
 function gerarRecibo(idSaida) {
   const s = saidas.find(x => x.id == idSaida);
   if(!s) return;
