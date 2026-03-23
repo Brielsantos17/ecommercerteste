@@ -195,12 +195,6 @@
   .cart-btn-remove:hover { background: #fca5a5; }
   .section-divider { border: none; border-top: 1px dashed var(--green-mid); margin: 24px 0; }
 
-  /* =========================================================
-     🧾 RECIBO — gerado dinamicamente com inline styles
-     Apenas estilos do preview do modal ficam aqui
-     ========================================================= */
-  #recibo-dados { display: none; }
-
   /* SECTION BLOCKS & CARDS COMUNS */
   .section-block { background: var(--white); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); padding: 28px; margin-bottom: 24px; width: 100%; box-sizing: border-box;}
   .section-block h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--green); margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
@@ -620,7 +614,6 @@
 
 </main>
 
-<!-- MODAIS -->
 <div class="modal-overlay" id="modal-cliente">
   <div class="modal">
     <div class="modal-header">
@@ -787,7 +780,6 @@
   </div>
 </div>
 
-<!-- MODAL RECIBO — apenas preview, PDF gerado a partir de elemento oculto -->
 <div class="modal-overlay" id="modal-recibo">
   <div class="modal" style="background: #fff; border-radius: 8px; max-width: 680px;">
     <div class="modal-header">
@@ -795,7 +787,6 @@
       <button class="close-btn" onclick="closeModal('modal-recibo')">&times;</button>
     </div>
     <div class="modal-body" style="background: #fafafa; padding: 20px;">
-      <!-- Preview simplificado dentro do modal -->
       <div id="recibo-preview" style="background:#fff; border:1px solid #e2ece6; border-radius:8px; padding:20px; font-family:sans-serif; font-size:13px; color:#1a2e23;">
         <div style="text-align:center; border-bottom:2px solid #2d6a4f; padding-bottom:12px; margin-bottom:16px;">
           <div style="font-size:26px; font-weight:700; color:#2d6a4f; font-family:Georgia,serif;">Ateliê 03</div>
@@ -813,39 +804,35 @@
   </div>
 </div>
 
-<!-- Os dados do recibo são armazenados aqui e o PDF é gerado dinamicamente -->
-<div id="recibo-dados" style="display:none;"></div>
-
 <script>
 // ==========================================
-// CONFIGURAÇÃO DO FIREBASE (NUVEM)
+// CONFIGURAÇÃO DO FIREBASE (NUVEM) E VARS
 // ==========================================
-const firebaseConfig = {
-  apiKey: "AIzaSyAc6FFJ7Nq8f9ZrT2TofAYwRRFX-_-TyUY",
-  authDomain: "atelie03.firebaseapp.com",
-  projectId: "atelie03",
-  storageBucket: "atelie03.firebasestorage.app",
-  messagingSenderId: "23079597569",
-  appId: "1:23079597569:web:d35935ad05cd70c8cf3200",
-  measurementId: "G-9FMVXGHBVJ"
-};
+let db = null;
+try {
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp({
+      apiKey: "AIzaSyAc6FFJ7Nq8f9ZrT2TofAYwRRFX-_-TyUY",
+      authDomain: "atelie03.firebaseapp.com",
+      projectId: "atelie03",
+      storageBucket: "atelie03.firebasestorage.app",
+      messagingSenderId: "23079597569",
+      appId: "1:23079597569:web:d35935ad05cd70c8cf3200",
+      measurementId: "G-9FMVXGHBVJ"
+    });
+    db = firebase.firestore();
+  }
+} catch (e) { console.error("Firebase off", e); }
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// ==========================================
-// VARIÁVEIS DE DADOS GLOBAIS
-// ==========================================
 let estoque = [];
 let saidas = [];
 let clientes = []; 
 let carrinhoAtual = []; 
+let _reciboData = null;
 
 document.addEventListener('click', function(e) {
     const wrapper = document.querySelector('.custom-search-wrapper');
-    if (wrapper && !wrapper.contains(e.target)) {
-        esconderDropdownItens();
-    }
+    if (wrapper && !wrapper.contains(e.target)) esconderDropdownItens();
 });
 
 // ==========================================
@@ -857,8 +844,7 @@ let senhaAtual = "";
 function initLockScreen() {
   const lockScreen = document.getElementById('lock-screen');
   const lastLoginDate = localStorage.getItem('atelie_last_login_date');
-  const today = new Date().toDateString(); 
-  if (lastLoginDate === today) {
+  if (lastLoginDate === new Date().toDateString()) {
     lockScreen.style.display = 'none';
     loadData(); 
   } else {
@@ -870,255 +856,162 @@ function initLockScreen() {
 function updateDots() {
   const dots = document.querySelectorAll('#pin-dots .dot');
   dots.forEach((dot, index) => {
-    if (index < senhaAtual.length) { dot.classList.add('filled'); } 
-    else { dot.classList.remove('filled'); }
+    if (index < senhaAtual.length) dot.classList.add('filled'); 
+    else dot.classList.remove('filled');
   });
 }
 
-const hiddenPin = document.getElementById('hidden-pin');
-hiddenPin.addEventListener('input', function(e) {
+document.getElementById('hidden-pin').addEventListener('input', function(e) {
   senhaAtual = e.target.value.replace(/\D/g, '').substring(0, 6);
-  e.target.value = senhaAtual; 
-  updateDots();
-  if (senhaAtual.length === 6) { setTimeout(checkPin, 150); }
+  e.target.value = senhaAtual; updateDots();
+  if (senhaAtual.length === 6) setTimeout(checkPin, 150);
 });
 
-function addPin(numStr) {
+function addPin(n) {
   if (senhaAtual.length < 6) {
-    senhaAtual += numStr;
-    hiddenPin.value = senhaAtual; 
-    updateDots();
-    if (senhaAtual.length === 6) { setTimeout(checkPin, 150); }
+    senhaAtual += n; document.getElementById('hidden-pin').value = senhaAtual; updateDots();
+    if (senhaAtual.length === 6) setTimeout(checkPin, 150);
   }
 }
 
 function removePin() {
   senhaAtual = senhaAtual.slice(0, -1);
-  hiddenPin.value = senhaAtual;
-  updateDots();
+  document.getElementById('hidden-pin').value = senhaAtual; updateDots();
 }
 
 function checkPin() {
   const lockScreen = document.getElementById('lock-screen');
-  const dotsContainer = document.getElementById('pin-dots');
-
   if (senhaAtual === SENHA_CORRETA) {
     localStorage.setItem('atelie_last_login_date', new Date().toDateString());
     lockScreen.classList.add('unlocked');
-    hiddenPin.blur(); 
-    setTimeout(() => { 
-      lockScreen.style.display = 'none'; 
-      loadData(); 
-    }, 500);
+    document.getElementById('hidden-pin').blur(); 
+    setTimeout(() => { lockScreen.style.display = 'none'; loadData(); }, 500);
   } else {
-    dotsContainer.classList.add('error-shake');
+    document.getElementById('pin-dots').classList.add('error-shake');
     setTimeout(() => {
-      dotsContainer.classList.remove('error-shake');
-      senhaAtual = "";
-      hiddenPin.value = "";
-      updateDots();
+      document.getElementById('pin-dots').classList.remove('error-shake');
+      senhaAtual = ""; document.getElementById('hidden-pin').value = ""; updateDots();
     }, 400);
   }
 }
 
 function forceLock() {
   localStorage.removeItem('atelie_last_login_date');
-  senhaAtual = "";
-  hiddenPin.value = "";
-  updateDots();
-  const lockScreen = document.getElementById('lock-screen');
-  lockScreen.style.display = 'flex';
-  setTimeout(() => { lockScreen.classList.remove('unlocked'); }, 10);
-  showPage('dashboard', document.querySelector('.nav-item[data-target="dashboard"]')); 
+  senhaAtual = ""; document.getElementById('hidden-pin').value = ""; updateDots();
+  document.getElementById('lock-screen').style.display = 'flex';
+  setTimeout(() => { document.getElementById('lock-screen').classList.remove('unlocked'); }, 10);
 }
 
 document.addEventListener('keydown', function(e) {
-  const lockScreen = document.getElementById('lock-screen');
-  if (lockScreen && lockScreen.style.display !== 'none' && !lockScreen.classList.contains('unlocked')) {
-    if (e.key >= '0' && e.key <= '9') { addPin(e.key); } 
-    else if (e.key === 'Backspace') { removePin(); }
+  const ls = document.getElementById('lock-screen');
+  if (ls && ls.style.display !== 'none' && !ls.classList.contains('unlocked')) {
+    if (e.key >= '0' && e.key <= '9') addPin(e.key); 
+    else if (e.key === 'Backspace') removePin();
   }
 });
-
-initLockScreen();
 
 // ==========================================
 // FUNÇÕES DE NUVEM & LOAD
 // ==========================================
-
-// Detecta se o domínio atual está provavelmente bloqueado no Firebase
-// (GitHub Pages, domínios customizados não cadastrados, etc.)
-function showSyncStatus(msg, cor, autoHide = true) {
-  const el = document.getElementById('sync-status');
-  el.style.display = 'block';
-  el.innerText = msg;
-  el.style.background = cor || 'rgba(0,0,0,0.8)';
-  if (autoHide) setTimeout(() => { el.style.display = 'none'; }, 3000);
-}
-
 async function loadData() {
-  if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-    showSyncStatus('☁️ Sincronizando...', 'rgba(0,0,0,0.8)', false);
+  const syncStatus = document.getElementById('sync-status');
+  if (db) {
+    syncStatus.style.display = 'block'; syncStatus.innerText = '☁️ Sincronizando...';
     try {
       const docSnap = await db.collection("atelie").doc("dados").get();
       if (docSnap.exists) {
-        estoque  = docSnap.data().estoque  || [];
-        saidas   = docSnap.data().saidas   || [];
-        clientes = docSnap.data().clientes || [];
+        estoque = docSnap.data().estoque || [];
+        saidas = docSnap.data().saidas || [];
+        clientes = docSnap.data().clientes || []; 
       }
-      showSyncStatus('✅ Sincronizado', 'rgba(45,106,79,0.9)');
-    } catch (error) {
-      console.error("Erro Firebase:", error);
-      loadLocalFallback();
-
-      // Erro de domínio não autorizado (mais comum no GitHub Pages)
-      const isAuthError = error.code === 'permission-denied'
-        || (error.message && error.message.includes('auth'));
-      if (isAuthError) {
-        showSyncStatus('⚠️ Domínio não autorizado no Firebase', 'rgba(180,50,50,0.9)', false);
-        // Mostra alerta uma única vez por sessão
-        if (!sessionStorage.getItem('firebase_domain_alerted')) {
-          sessionStorage.setItem('firebase_domain_alerted', '1');
-          setTimeout(() => {
-            alert(
-              '⚠️ Firebase: domínio não autorizado\n\n' +
-              'Para funcionar no GitHub Pages, adicione seu domínio nas configurações do Firebase:\n\n' +
-              '1. Acesse console.firebase.google.com\n' +
-              '2. Seu projeto → Authentication → Settings → Authorized domains\n' +
-              '3. Clique em "Add domain" e adicione:\n' +
-              '   ' + window.location.hostname + '\n\n' +
-              'Enquanto isso, os dados ficam salvos localmente neste dispositivo.'
-            );
-          }, 800);
-        }
-      } else {
-        showSyncStatus('⚡ Offline — dados locais', 'rgba(100,100,100,0.85)');
-      }
-    }
+      syncStatus.innerText = '✅ Sincronizado'; setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
+    } catch (e) { loadLocalFallback(); }
   } else {
     loadLocalFallback();
   }
   renderDash();
-  const abaSalva = localStorage.getItem('atelie_aba_atual') || 'dashboard';
-  showPage(abaSalva);
+  showPage(localStorage.getItem('atelie_aba_atual') || 'dashboard');
 }
 
 function loadLocalFallback() {
-  estoque  = JSON.parse(localStorage.getItem('atelie_estoque')  || '[]');
-  saidas   = JSON.parse(localStorage.getItem('atelie_saidas')   || '[]');
+  estoque = JSON.parse(localStorage.getItem('atelie_estoque') || '[]');
+  saidas = JSON.parse(localStorage.getItem('atelie_saidas') || '[]');
   clientes = JSON.parse(localStorage.getItem('atelie_clientes') || '[]');
 }
 
 function save() {
-  // Sempre salva local primeiro — garante funcionamento offline/GitHub Pages
-  localStorage.setItem('atelie_estoque',  JSON.stringify(estoque));
-  localStorage.setItem('atelie_saidas',   JSON.stringify(saidas));
+  localStorage.setItem('atelie_estoque', JSON.stringify(estoque));
+  localStorage.setItem('atelie_saidas', JSON.stringify(saidas));
   localStorage.setItem('atelie_clientes', JSON.stringify(clientes));
 
-  if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-    showSyncStatus('☁️ Salvando...', 'rgba(0,0,0,0.8)', false);
-    db.collection("atelie").doc("dados").set({ estoque, saidas, clientes })
-      .then(() => {
-        showSyncStatus('✅ Salvo na nuvem', 'rgba(45,106,79,0.9)');
-      })
-      .catch(error => {
-        console.error("Erro ao salvar Firebase:", error);
-        showSyncStatus('💾 Salvo localmente', 'rgba(100,100,100,0.85)');
-      });
+  if (db) {
+    const syncStatus = document.getElementById('sync-status');
+    syncStatus.style.display = 'block'; syncStatus.innerText = '☁️ Salvando...';
+    db.collection("atelie").doc("dados").set({ estoque, saidas, clientes }).then(() => {
+      syncStatus.innerText = '✅ Salvo'; setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
+    }).catch(e => {
+      syncStatus.innerText = '❌ Erro'; setTimeout(() => { syncStatus.style.display = 'none'; }, 2000);
+    });
   }
 }
 
 // ==========================================
 // HELPER FUNCTIONS & UI
 // ==========================================
-function formatCurrency(value) {
-  return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
+function formatCurrency(value) { return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 function readNumberInput(id) {
   let val = document.getElementById(id).value;
   if (!val) return 0;
-  val = val.replace(/[^0-9,.]/g, ''); 
-  val = val.replace(',', '.'); 
-  return parseFloat(val) || 0;
+  return parseFloat(val.replace(/[^0-9,.]/g, '').replace(',', '.')) || 0;
 }
-
 function toggleRelatorios() {
-  const content = document.getElementById('relatorios-content');
-  const icon = document.getElementById('toggle-relatorios-icon');
-  if (content.style.display === 'none') {
-    content.style.display = 'block'; icon.style.transform = 'rotate(0deg)';
-  } else {
-    content.style.display = 'none'; icon.style.transform = 'rotate(-90deg)';
-  }
+  const content = document.getElementById('relatorios-content'), icon = document.getElementById('toggle-relatorios-icon');
+  if (content.style.display === 'none') { content.style.display = 'block'; icon.style.transform = 'rotate(0deg)'; } 
+  else { content.style.display = 'none'; icon.style.transform = 'rotate(-90deg)'; }
 }
-
 function showPage(name, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.page, .nav-item').forEach(x => x.classList.remove('active'));
   const page = document.getElementById('page-' + name);
   if (page) page.classList.add('active');
-  if(el) { el.classList.add('active'); } 
-  else {
-    const navItem = document.querySelector(`.nav-item[data-target="${name}"]`);
-    if(navItem) navItem.classList.add('active');
-  }
+  if (el) el.classList.add('active'); 
+  else { const navItem = document.querySelector(`.nav-item[data-target="${name}"]`); if(navItem) navItem.classList.add('active'); }
   localStorage.setItem('atelie_aba_atual', name);
-
-  if (name === 'clientes') renderClientes();
-  if (name === 'estoque') renderEstoque();
-  if (name === 'saidas') renderSaidas();
-  if (name === 'financeiro') renderFinanceiro();
-  if (name === 'dashboard') renderDash();
+  if (name === 'clientes') renderClientes(); if (name === 'estoque') renderEstoque(); if (name === 'saidas') renderSaidas(); if (name === 'financeiro') renderFinanceiro(); if (name === 'dashboard') renderDash();
   window.scrollTo(0,0); 
 }
-
 function openModal(id) {
   if (id === 'modal-saida') {
-      populateClienteSelect();
-      popularDropdownItens();
+      populateClienteSelect(); popularDropdownItens();
       if (!document.getElementById('saida-edit-id').value) {
-          document.getElementById('saida-data').value = new Date().toISOString().split('T')[0];
-          carrinhoAtual = [];
-          renderCarrinho();
+          document.getElementById('saida-data').value = new Date().toISOString().split('T')[0]; carrinhoAtual = []; renderCarrinho();
       }
   }
   document.getElementById(id).classList.add('open');
 }
-
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
-  if (id === 'modal-item') resetItemForm();
-  if (id === 'modal-saida') resetSaidaForm();
-  if (id === 'modal-cliente') resetClienteForm();
+  if (id === 'modal-item') resetItemForm(); if (id === 'modal-saida') resetSaidaForm(); if (id === 'modal-cliente') resetClienteForm();
 }
 
 // ==========================================
 // MÓDULO DE CLIENTES
 // ==========================================
 function salvarCliente() {
-  const nome = document.getElementById('cli-nome').value.trim();
-  const cpf = document.getElementById('cli-cpf').value.trim();
-  const fone = document.getElementById('cli-fone').value.trim();
-  const endereco = document.getElementById('cli-end').value.trim();
+  const nome = document.getElementById('cli-nome').value.trim(), cpf = document.getElementById('cli-cpf').value.trim();
+  const fone = document.getElementById('cli-fone').value.trim(), endereco = document.getElementById('cli-end').value.trim();
   const editId = document.getElementById('cli-edit-id').value;
 
   if (!nome || !fone) { alert('Nome e Telefone são obrigatórios!'); return; }
-
   if (editId) {
     const idx = clientes.findIndex(c => c.id == editId);
     if (idx > -1) clientes[idx] = { ...clientes[idx], nome, cpf, fone, endereco };
   } else { clientes.push({ id: Date.now(), nome, cpf, fone, endereco }); }
-  
   save(); renderClientes(); renderDash(); closeModal('modal-cliente');
 }
 
 function renderClientes() {
   const tbody = document.getElementById('clientes-body');
-  if (!clientes.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">👥</div><p>Nenhum cliente cadastrado.</p></div></td></tr>';
-    return;
-  }
+  if (!clientes.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">👥</div><p>Nenhum cliente cadastrado.</p></div></td></tr>'; return; }
   tbody.innerHTML = clientes.map(c => `
     <tr>
       <td data-label="Nome"><strong>${c.nome}</strong></td>
@@ -1135,29 +1028,22 @@ function renderClientes() {
 function editCliente(id) {
   const c = clientes.find(x => x.id == id);
   if (!c) return;
-  document.getElementById('cli-nome').value = c.nome;
-  document.getElementById('cli-cpf').value = c.cpf || '';
-  document.getElementById('cli-fone').value = c.fone || '';
-  document.getElementById('cli-end').value = c.endereco || '';
+  document.getElementById('cli-nome').value = c.nome; document.getElementById('cli-cpf').value = c.cpf || '';
+  document.getElementById('cli-fone').value = c.fone || ''; document.getElementById('cli-end').value = c.endereco || '';
   document.getElementById('cli-edit-id').value = c.id;
   openModal('modal-cliente');
 }
 
 function deleteCliente(id) {
-  const temVenda = saidas.some(s => s.clienteId == id);
-  if (temVenda) { alert('Ação bloqueada: Este cliente possui histórico de pedidos.'); return; }
+  if (saidas.some(s => s.clienteId == id)) { alert('Bloqueado: Cliente possui pedidos.'); return; }
   if (!confirm('Deletar este cliente?')) return;
-  clientes = clientes.filter(c => c.id != id);
-  save(); renderClientes(); renderDash();
+  clientes = clientes.filter(c => c.id != id); save(); renderClientes(); renderDash();
 }
 
-function resetClienteForm() {
-  ['cli-nome','cli-cpf','cli-fone','cli-end','cli-edit-id'].forEach(id => document.getElementById(id).value = '');
-}
+function resetClienteForm() { ['cli-nome','cli-cpf','cli-fone','cli-end','cli-edit-id'].forEach(id => document.getElementById(id).value = ''); }
 
 function populateClienteSelect() {
-  const sel = document.getElementById('saida-cliente');
-  sel.innerHTML = '<option value="">Consumidor Final (Sem cadastro)</option>' +
+  document.getElementById('saida-cliente').innerHTML = '<option value="">Consumidor Final (Sem cadastro)</option>' +
     clientes.map(c => `<option value="${c.id}">${c.nome} - ${c.fone}</option>`).join('');
 }
 
@@ -1165,37 +1051,29 @@ function populateClienteSelect() {
 // MÓDULO DE ESTOQUE
 // ==========================================
 function salvarItem(manterAberto = false) {
-  const nome = document.getElementById('item-nome').value.trim();
-  const tamanho = document.getElementById('item-tamanho').value;
-  const qtd = parseInt(document.getElementById('item-qtd').value) || 0;
-  const preco = readNumberInput('item-preco');
-  const cor = document.getElementById('item-cor').value.trim();
-  const sku = document.getElementById('item-sku').value.trim();
+  const nome = document.getElementById('item-nome').value.trim(), tamanho = document.getElementById('item-tamanho').value;
+  const qtd = parseInt(document.getElementById('item-qtd').value) || 0, preco = readNumberInput('item-preco');
+  const cor = document.getElementById('item-cor').value.trim(), sku = document.getElementById('item-sku').value.trim();
   const editId = document.getElementById('item-edit-id').value;
 
   if (!nome || !tamanho) { alert('Preencha Nome e Tamanho!'); return; }
-
   if (editId) {
     const idx = estoque.findIndex(i => i.id == editId);
     if (idx > -1) estoque[idx] = { ...estoque[idx], nome, tamanho, qtd, preco, cor, sku };
   } else { estoque.push({ id: Date.now(), nome, tamanho, qtd, preco, cor, sku }); }
   
   save(); renderEstoque(); renderDash();
-  if (manterAberto) { resetItemForm(); document.getElementById('item-nome').focus(); } 
-  else { closeModal('modal-item'); }
+  if (manterAberto) { resetItemForm(); document.getElementById('item-nome').focus(); } else { closeModal('modal-item'); }
 }
 
 function renderEstoque() {
   const tbody = document.getElementById('estoque-body');
-  if (!estoque.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">👙</div><p>Nenhum item cadastrado.</p></div></td></tr>';
-    return;
-  }
-  const sizeBadge = { PP:'badge-pp', P:'badge-p', M:'badge-m', G:'badge-g', GG:'badge-gg', Único:'badge-u' };
+  if (!estoque.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">👙</div><p>Nenhum item cadastrado.</p></div></td></tr>'; return; }
+  const sz = { PP:'badge-pp', P:'badge-p', M:'badge-m', G:'badge-g', GG:'badge-gg', Único:'badge-u' };
   tbody.innerHTML = estoque.map(i => `
     <tr>
       <td data-label="Item"><strong>${i.nome}</strong>${i.cor ? `<br><small style="color:var(--gray);font-weight:normal">${i.cor}</small>` : ''}</td>
-      <td data-label="Tamanho"><span class="badge ${sizeBadge[i.tamanho]||'badge-u'}">${i.tamanho}</span></td>
+      <td data-label="Tamanho"><span class="badge ${sz[i.tamanho]||'badge-u'}">${i.tamanho}</span></td>
       <td data-label="Quantidade"><span style="font-weight:700;color:${i.qtd<=3?'#e63946':'var(--green)'}">${i.qtd}</span>${i.qtd<=3?'<span style="font-size:11px;color:#e63946;margin-left:5px;">⚠️ Baixo</span>':''}</td>
       <td data-label="Preço">${i.preco ? formatCurrency(i.preco) : formatCurrency(0)}</td>
       <td data-label="Ações">
@@ -1208,261 +1086,159 @@ function renderEstoque() {
 function editItem(id) {
   const i = estoque.find(x => x.id == id);
   if (!i) return;
-  document.getElementById('item-nome').value = i.nome;
-  document.getElementById('item-tamanho').value = i.tamanho;
-  document.getElementById('item-qtd').value = i.qtd;
-  document.getElementById('item-preco').value = i.preco ? i.preco.toFixed(2).replace('.', ',') : '';
-  document.getElementById('item-cor').value = i.cor || '';
-  document.getElementById('item-sku').value = i.sku || '';
+  document.getElementById('item-nome').value = i.nome; document.getElementById('item-tamanho').value = i.tamanho;
+  document.getElementById('item-qtd').value = i.qtd; document.getElementById('item-preco').value = i.preco ? i.preco.toFixed(2).replace('.', ',') : '';
+  document.getElementById('item-cor').value = i.cor || ''; document.getElementById('item-sku').value = i.sku || '';
   document.getElementById('item-edit-id').value = i.id;
   openModal('modal-item');
 }
 
 function deleteItem(id) {
-  const temSaida = saidas.some(s => {
-    const itensS = s.itens || [s];
-    return itensS.some(oi => oi.itemId == id);
-  });
-  if (temSaida) { alert('Ação bloqueada: Este item possui histórico em pacotes/saídas.'); return; }
+  if (saidas.some(s => (s.itens||[s]).some(oi => oi.itemId == id))) { alert('Bloqueado: Item possui histórico de saídas.'); return; }
   if (!confirm('Deletar este item?')) return;
-  estoque = estoque.filter(i => i.id != id);
-  save(); renderEstoque(); renderDash();
+  estoque = estoque.filter(i => i.id != id); save(); renderEstoque(); renderDash();
 }
 
-function resetItemForm() {
-  ['item-nome','item-tamanho','item-qtd','item-preco','item-cor','item-sku','item-edit-id'].forEach(id => document.getElementById(id).value = '');
-}
+function resetItemForm() { ['item-nome','item-tamanho','item-qtd','item-preco','item-cor','item-sku','item-edit-id'].forEach(id => document.getElementById(id).value = ''); }
 
 // ==========================================
-// MÓDULO DE SAÍDAS (CARRINHO E BUSCA INTERATIVA)
+// MÓDULO DE SAÍDAS
 // ==========================================
 function popularDropdownItens() {
   const listDiv = document.getElementById('custom-select-list');
-  if(estoque.length === 0) {
-      listDiv.innerHTML = '<div class="custom-option" style="color:#666; text-align:center;">Estoque vazio</div>';
-      return;
-  }
+  if(estoque.length === 0) { listDiv.innerHTML = '<div class="custom-option" style="color:#666; text-align:center;">Estoque vazio</div>'; return; }
   listDiv.innerHTML = estoque.map(i => {
-    const textoCor = i.cor ? ` - ${i.cor}` : '';
-    const labelCompleta = `${i.nome} - Tam: ${i.tamanho}${textoCor}`;
+    const textoCor = i.cor ? ` - ${i.cor}` : ''; const labelCompleta = `${i.nome} - Tam: ${i.tamanho}${textoCor}`;
     return `<div class="custom-option" onclick="selecionarItemBusca('${i.id}', '${i.preco}', \`${labelCompleta}\`)">
-              <strong>${i.nome}</strong> - ${i.tamanho}${textoCor} 
-              <br><small style="color:var(--gray)">Estoque: ${i.qtd}</small>
+              <strong>${i.nome}</strong> - ${i.tamanho}${textoCor} <br><small style="color:var(--gray)">Estoque: ${i.qtd}</small>
             </div>`;
   }).join('');
 }
 
 function filtrarDropdownItens() {
   const filter = document.getElementById('item-search-input').value.toLowerCase();
-  const options = document.querySelectorAll('.custom-option');
-  options.forEach(opt => {
-      const txtValue = opt.innerText.toLowerCase();
-      opt.style.display = txtValue.indexOf(filter) > -1 ? "" : "none";
+  document.querySelectorAll('.custom-option').forEach(opt => {
+      opt.style.display = opt.innerText.toLowerCase().indexOf(filter) > -1 ? "" : "none";
   });
 }
 
-function mostrarDropdownItens() {
-  popularDropdownItens();
-  document.getElementById('custom-select-list').classList.add('show');
-}
-
-function esconderDropdownItens() {
-  setTimeout(() => { document.getElementById('custom-select-list').classList.remove('show'); }, 200);
-}
+function mostrarDropdownItens() { popularDropdownItens(); document.getElementById('custom-select-list').classList.add('show'); }
+function esconderDropdownItens() { setTimeout(() => { document.getElementById('custom-select-list').classList.remove('show'); }, 200); }
 
 function selecionarItemBusca(id, preco, label) {
-  document.getElementById('saida-item').value = id;
-  document.getElementById('item-search-input').value = label;
-  const p = parseFloat(preco);
-  document.getElementById('saida-valor').value = p ? p.toFixed(2).replace('.', ',') : '';
+  document.getElementById('saida-item').value = id; document.getElementById('item-search-input').value = label;
+  const p = parseFloat(preco); document.getElementById('saida-valor').value = p ? p.toFixed(2).replace('.', ',') : '';
   esconderDropdownItens();
 }
 
 function adicionarAoCarrinho() {
-  const itemId = document.getElementById('saida-item').value;
-  const qtd = parseInt(document.getElementById('saida-qtd').value) || 1;
-  const dev = parseInt(document.getElementById('saida-dev').value) || 0;
-  const valor = readNumberInput('saida-valor');
+  const itemId = document.getElementById('saida-item').value, qtd = parseInt(document.getElementById('saida-qtd').value) || 1;
+  const dev = parseInt(document.getElementById('saida-dev').value) || 0, valor = readNumberInput('saida-valor');
 
   if (!itemId) { alert('Selecione um item na lista de pesquisa.'); return; }
   if (dev > qtd) { alert('Devolução não pode ser maior que entregue.'); return; }
-
-  const itemEstoque = estoque.find(i => i.id == itemId);
-  if (!itemEstoque) return;
+  const itemEstoque = estoque.find(i => i.id == itemId); if (!itemEstoque) return;
 
   const existente = carrinhoAtual.find(c => c.itemId == itemId);
-  if (existente) {
-      existente.qtd += qtd;
-      existente.dev += dev;
-  } else {
-      carrinhoAtual.push({
-          itemId, itemNome: itemEstoque.nome, itemTamanho: itemEstoque.tamanho,
-          itemCor: itemEstoque.cor, qtd, dev, valor
-      });
-  }
+  if (existente) { existente.qtd += qtd; existente.dev += dev; } 
+  else { carrinhoAtual.push({ itemId, itemNome: itemEstoque.nome, itemTamanho: itemEstoque.tamanho, itemCor: itemEstoque.cor, qtd, dev, valor }); }
 
-  document.getElementById('saida-item').value = '';
-  document.getElementById('item-search-input').value = '';
-  document.getElementById('saida-qtd').value = 1;
-  document.getElementById('saida-dev').value = 0;
-  document.getElementById('saida-valor').value = '';
+  document.getElementById('saida-item').value = ''; document.getElementById('item-search-input').value = '';
+  document.getElementById('saida-qtd').value = 1; document.getElementById('saida-dev').value = 0; document.getElementById('saida-valor').value = '';
   renderCarrinho();
 }
 
-function removerDoCarrinho(index) {
-  carrinhoAtual.splice(index, 1);
-  renderCarrinho();
-}
+function removerDoCarrinho(index) { carrinhoAtual.splice(index, 1); renderCarrinho(); }
 
 function renderCarrinho() {
   const divList = document.getElementById('carrinho-list');
-  if (carrinhoAtual.length === 0) {
-      divList.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--gray); font-size:13px; border:1px dashed var(--border); border-radius:10px;">Pacote vazio. Pesquise e adicione itens acima.</div>';
-      return;
-  }
-  let totalPacote = 0;
-  let html = '';
+  if (carrinhoAtual.length === 0) { divList.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--gray); font-size:13px; border:1px dashed var(--border); border-radius:10px;">Pacote vazio. Pesquise e adicione itens acima.</div>'; return; }
+  let totalPacote = 0, html = '';
   carrinhoAtual.forEach((c, index) => {
-      const subtotal = c.valor * c.qtd;
-      totalPacote += subtotal;
-      const textoCor = c.itemCor ? ` - ${c.itemCor}` : '';
-      html += `
-      <div class="cart-item">
-          <div class="cart-item-info">
-              <strong>${c.itemNome}</strong> (Tam: ${c.itemTamanho}${textoCor})<br>
-              <span style="color: var(--gray); font-size:12px;">Entregue: ${c.qtd} | Dev: ${c.dev}</span>
-          </div>
+      const subtotal = c.valor * c.qtd; totalPacote += subtotal; const textoCor = c.itemCor ? ` - ${c.itemCor}` : '';
+      html += `<div class="cart-item"><div class="cart-item-info"><strong>${c.itemNome}</strong> (Tam: ${c.itemTamanho}${textoCor})<br>
+              <span style="color: var(--gray); font-size:12px;">Entregue: ${c.qtd} | Dev: ${c.dev}</span></div>
           <div class="cart-item-price">${formatCurrency(subtotal)}</div>
-          <button class="cart-btn-remove" onclick="removerDoCarrinho(${index})">X</button>
-      </div>`;
+          <button class="cart-btn-remove" onclick="removerDoCarrinho(${index})">X</button></div>`;
   });
   html += `<div style="text-align:right; font-weight:bold; color:var(--green); font-size:16px; margin-top:10px;">Total do Pacote: ${formatCurrency(totalPacote)}</div>`;
   divList.innerHTML = html;
 }
 
 function salvarSaida() {
-  const data = document.getElementById('saida-data').value;
-  const clienteId = document.getElementById('saida-cliente').value;
-  const pedido = document.getElementById('saida-pedido').value.trim();
-  const editId = document.getElementById('saida-edit-id').value;
+  const data = document.getElementById('saida-data').value, clienteId = document.getElementById('saida-cliente').value;
+  const pedido = document.getElementById('saida-pedido').value.trim(), editId = document.getElementById('saida-edit-id').value;
 
   if (!data) { alert('A Data do pedido é obrigatória!'); return; }
   if (carrinhoAtual.length === 0) { alert('O pacote está vazio. Adicione itens antes de registrar.'); return; }
 
-  let tempStock = {};
-  estoque.forEach(i => tempStock[i.id] = i.qtd);
-
+  let tempStock = {}; estoque.forEach(i => tempStock[i.id] = i.qtd);
   if (editId) {
      const oldS = saidas.find(x => x.id == editId);
-     const oldItens = oldS.itens || [oldS]; 
-     oldItens.forEach(oi => {
-        if (tempStock[oi.itemId] !== undefined) { tempStock[oi.itemId] += (oi.qtd - (oi.dev || 0)); }
-     });
+     (oldS.itens || [oldS]).forEach(oi => { if (tempStock[oi.itemId] !== undefined) tempStock[oi.itemId] += (oi.qtd - (oi.dev || 0)); });
   }
-
   for (let ci of carrinhoAtual) {
      if (tempStock[ci.itemId] !== undefined) {
          tempStock[ci.itemId] -= (ci.qtd - (ci.dev || 0));
-         if (tempStock[ci.itemId] < 0) {
-             alert(`Estoque insuficiente para o item: ${ci.itemNome}. O estoque não pode ficar negativo.`);
-             return;
-         }
+         if (tempStock[ci.itemId] < 0) { alert(`Estoque insuficiente para o item: ${ci.itemNome}.`); return; }
      }
   }
 
   if (editId) {
      const oldS = saidas.find(x => x.id == editId);
-     const oldItens = oldS.itens || [oldS];
-     oldItens.forEach(oi => {
-        const item = estoque.find(i => i.id == oi.itemId);
-        if (item) item.qtd += (oi.qtd - (oi.dev || 0));
-     });
+     (oldS.itens || [oldS]).forEach(oi => { const item = estoque.find(i => i.id == oi.itemId); if (item) item.qtd += (oi.qtd - (oi.dev || 0)); });
   }
+  carrinhoAtual.forEach(ci => { const item = estoque.find(i => i.id == ci.itemId); if (item) item.qtd -= (ci.qtd - (ci.dev || 0)); });
 
-  carrinhoAtual.forEach(ci => {
-     const item = estoque.find(i => i.id == ci.itemId);
-     if (item) item.qtd -= (ci.qtd - (ci.dev || 0));
-  });
-
-  const novaSaida = {
-     id: editId ? editId : Date.now(),
-     data, clienteId, pedido,
-     itens: [...carrinhoAtual] 
-  };
-
-  if (editId) {
-     const idx = saidas.findIndex(x => x.id == editId);
-     saidas[idx] = novaSaida;
-  } else { saidas.push(novaSaida); }
-  
+  const novaSaida = { id: editId ? editId : Date.now(), data, clienteId, pedido, itens: [...carrinhoAtual] };
+  if (editId) saidas[saidas.findIndex(x => x.id == editId)] = novaSaida; else saidas.push(novaSaida);
   save(); renderSaidas(); renderDash(); closeModal('modal-saida');
 }
 
 function editSaida(id) {
-  const s = saidas.find(x => x.id == id);
-  if (!s) return;
+  const s = saidas.find(x => x.id == id); if (!s) return;
   document.getElementById('saida-edit-id').value = s.id;
   document.getElementById('saida-data').value = s.data;
   document.getElementById('saida-cliente').value = s.clienteId || '';
   document.getElementById('saida-pedido').value = s.pedido || '';
-  carrinhoAtual = s.itens ? JSON.parse(JSON.stringify(s.itens)) : [{
-      itemId: s.itemId, itemNome: s.itemNome, itemTamanho: s.itemTamanho, itemCor: s.itemCor, qtd: s.qtd, dev: s.dev, valor: s.valor
-  }];
-  openModal('modal-saida');
-  renderCarrinho(); 
+  carrinhoAtual = s.itens ? JSON.parse(JSON.stringify(s.itens)) : [{ itemId: s.itemId, itemNome: s.itemNome, itemTamanho: s.itemTamanho, itemCor: s.itemCor, qtd: s.qtd, dev: s.dev, valor: s.valor }];
+  openModal('modal-saida'); renderCarrinho(); 
 }
 
 function resetSaidaForm() {
   document.getElementById('saida-edit-id').value = '';
-  ['saida-data','saida-cliente','saida-item','saida-qtd','saida-dev','saida-valor','saida-pedido','item-search-input'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
+  ['saida-data','saida-cliente','saida-item','saida-qtd','saida-dev','saida-valor','saida-pedido','item-search-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   carrinhoAtual = [];
 }
 
 // ==========================================
-// GERADOR DE RECIBO E PDF — ABORDAGEM DINÂMICA
-// Guarda os dados do recibo e gera o elemento
-// temporário NO momento do clique, evitando
-// qualquer problema de overflow/clip/posição.
+// GERADOR DE RECIBO E PDF
 // ==========================================
-let _reciboData = null; // armazena os dados para o PDF
+let _reciboData = null;
 
 function gerarRecibo(idSaida) {
-  const s = saidas.find(x => x.id == idSaida);
-  if (!s) return;
-
-  const c           = clientes.find(x => x.id == s.clienteId);
-  const dataPtBr    = formatDate(s.data);
-  const dataEmissao = new Date().toLocaleDateString('pt-BR');
-  const itens       = s.itens || [s];
-
+  const s = saidas.find(x => x.id == idSaida); if (!s) return;
+  const c = clientes.find(x => x.id == s.clienteId);
+  
   let totalRecibo = 0;
-  const itensProcessados = itens.map(i => {
+  const itensProcessados = (s.itens || [s]).map(i => {
     let cor = i.itemCor;
-    if (!cor && i.itemId) {
-      const ie = estoque.find(e => e.id == i.itemId);
-      if (ie && ie.cor) cor = ie.cor;
-    }
-    const subtotal = (i.valor || 0) * (i.qtd || 0);
-    totalRecibo += subtotal;
+    if (!cor && i.itemId) { const ie = estoque.find(e => e.id == i.itemId); if (ie && ie.cor) cor = ie.cor; }
+    const subtotal = (i.valor || 0) * (i.qtd || 0); totalRecibo += subtotal;
     return { nome: i.itemNome, tam: i.itemTamanho, cor, qtd: i.qtd, valor: i.valor || 0, subtotal };
   });
 
-  // Salva para usar no baixarPDF
   _reciboData = {
-    clienteNome  : c ? c.nome      : 'Consumidor Final',
-    clienteCpf   : c ? (c.cpf      || 'Não informado') : '-',
+    clienteNome  : c ? c.nome : 'Consumidor Final',
+    clienteCpf   : c ? (c.cpf || 'Não informado') : '-',
     clienteEnd   : c ? (c.endereco || 'Não informado') : '-',
-    data         : dataPtBr,
+    data         : formatDate(s.data),
     pedido       : s.pedido || String(s.id),
-    dataEmissao,
+    dataEmissao  : new Date().toLocaleDateString('pt-BR'),
     itens        : itensProcessados,
     total        : totalRecibo
   };
 
-  // Monta preview no modal
   const d = _reciboData;
   document.getElementById('rec-preview-info').innerHTML = `
     <strong>Cliente:</strong> ${d.clienteNome}<br>
@@ -1471,19 +1247,10 @@ function gerarRecibo(idSaida) {
     <strong>Endereço:</strong> ${d.clienteEnd}
   `;
 
-  let tbl = '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
-    + '<thead><tr style="background:#d8f3dc;">'
-    + '<th style="padding:6px 8px;text-align:left;">Item</th>'
-    + '<th style="padding:6px 8px;text-align:center;">Qtd</th>'
-    + '<th style="padding:6px 8px;text-align:right;">Total</th>'
-    + '</tr></thead><tbody>';
+  let tbl = '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#d8f3dc;"><th style="padding:6px 8px;text-align:left;">Item</th><th style="padding:6px 8px;text-align:center;">Qtd</th><th style="padding:6px 8px;text-align:right;">Total</th></tr></thead><tbody>';
   d.itens.forEach(i => {
     const cor = i.cor ? ` - ${i.cor}` : '';
-    tbl += `<tr>
-      <td style="padding:6px 8px;border-bottom:1px solid #eee;">${i.nome} (${i.tam}${cor})</td>
-      <td style="padding:6px 8px;text-align:center;border-bottom:1px solid #eee;">${i.qtd}</td>
-      <td style="padding:6px 8px;text-align:right;border-bottom:1px solid #eee;">${formatCurrency(i.subtotal)}</td>
-    </tr>`;
+    tbl += `<tr><td style="padding:6px 8px;border-bottom:1px solid #eee;">${i.nome} (${i.tam}${cor})</td><td style="padding:6px 8px;text-align:center;border-bottom:1px solid #eee;">${i.qtd}</td><td style="padding:6px 8px;text-align:right;border-bottom:1px solid #eee;">${formatCurrency(i.subtotal)}</td></tr>`;
   });
   tbl += '</tbody></table>';
 
@@ -1492,7 +1259,6 @@ function gerarRecibo(idSaida) {
   openModal('modal-recibo');
 }
 
-// Gera o HTML completo do recibo como string pura (inline styles = 100% compatível com html2canvas)
 function buildReciboHTML(d) {
   let linhasItens = '';
   d.itens.forEach((i, idx) => {
@@ -1508,25 +1274,13 @@ function buildReciboHTML(d) {
   });
 
   return `
-  <div style="
-    font-family: Arial, Helvetica, sans-serif;
-    background: #ffffff;
-    width: 794px;
-    min-height: 1123px;
-    padding: 56px 60px;
-    box-sizing: border-box;
-    color: #000;
-  ">
-    <!-- CABEÇALHO -->
+  <div style="font-family: Arial, Helvetica, sans-serif; background: #ffffff; width: 794px; min-height: 1123px; padding: 56px 60px; box-sizing: border-box; color: #000;">
     <div style="text-align:center; border-bottom:3px solid #2d6a4f; padding-bottom:20px; margin-bottom:6px;">
       <div style="font-family:Georgia,serif; font-size:44px; font-weight:700; color:#2d6a4f; margin:0 0 4px 0; letter-spacing:-1px;">Ateliê 03</div>
       <div style="font-size:11px; text-transform:uppercase; letter-spacing:3px; color:#40916c; font-weight:700;">Moda Praia &amp; Biquínis</div>
     </div>
-    <div style="text-align:center; font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:2px; margin:14px 0 22px 0; padding-bottom:14px; border-bottom:1px dashed #ccc;">
-      Documento de Confirmação de Pacote
-    </div>
+    <div style="text-align:center; font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:2px; margin:14px 0 22px 0; padding-bottom:14px; border-bottom:1px dashed #ccc;">Documento de Confirmação de Pacote</div>
 
-    <!-- DADOS DO CLIENTE (tabela 2 colunas — compatível com html2canvas) -->
     <table style="width:100%; border-collapse:collapse; margin-bottom:22px; border:1px solid #d8f3dc; border-radius:6px; overflow:hidden;">
       <tr>
         <td style="width:50%; padding:10px 16px; background:#f8fdf9; border-bottom:1px solid #e2ece6; border-right:1px solid #e2ece6; vertical-align:top;">
@@ -1556,19 +1310,10 @@ function buildReciboHTML(d) {
       </tr>
     </table>
 
-    <!-- TÍTULO DA SEÇÃO ITENS -->
-    <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#2d6a4f; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #d8f3dc;">
-      Itens do Pacote
-    </div>
+    <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#2d6a4f; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #d8f3dc;">Itens do Pacote</div>
 
-    <!-- TABELA DE ITENS -->
     <table style="width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:fixed;">
-      <colgroup>
-        <col style="width:50%;">
-        <col style="width:12%;">
-        <col style="width:19%;">
-        <col style="width:19%;">
-      </colgroup>
+      <colgroup><col style="width:50%;"><col style="width:12%;"><col style="width:19%;"><col style="width:19%;"></colgroup>
       <thead>
         <tr style="background:#2d6a4f;">
           <th style="padding:10px 14px; text-align:left; font-size:11px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.8px;">Descrição do Item</th>
@@ -1580,7 +1325,6 @@ function buildReciboHTML(d) {
       <tbody>${linhasItens}</tbody>
     </table>
 
-    <!-- TOTAL -->
     <table style="width:100%; border-collapse:collapse; margin-bottom:40px;">
       <tr>
         <td style="text-align:right; padding:16px 20px; border:2px solid #2d6a4f; border-radius:6px; background:#f0fdf4;">
@@ -1590,95 +1334,38 @@ function buildReciboHTML(d) {
       </tr>
     </table>
 
-    <!-- ASSINATURA -->
     <div style="margin-top:50px; text-align:center;">
-      <p style="font-size:12px; color:#6b7280; margin-bottom:48px; font-style:italic; line-height:1.6;">
-        Declaro que recebi os itens acima descritos em perfeito estado e concordo com a entrega.
-      </p>
+      <p style="font-size:12px; color:#6b7280; margin-bottom:48px; font-style:italic; line-height:1.6;">Declaro que recebi os itens acima descritos em perfeito estado e concordo com a entrega.</p>
       <div style="border-top:1px solid #000; width:60%; margin:0 auto 10px;"></div>
       <div style="font-size:14px; font-weight:700; color:#1a2e23;">${d.clienteNome}</div>
       <div style="font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:1px; margin-top:4px;">Assinatura do Cliente</div>
     </div>
-
-    <!-- RODAPÉ -->
-    <div style="margin-top:48px; padding-top:16px; border-top:1px dashed #ccc; text-align:center; font-size:11px; color:#9ca3af;">
-      Ateliê 03 &mdash; Documento gerado em ${d.dataEmissao}
-    </div>
+    <div style="margin-top:48px; padding-top:16px; border-top:1px dashed #ccc; text-align:center; font-size:11px; color:#9ca3af;">Ateliê 03 &mdash; Documento gerado em ${d.dataEmissao}</div>
   </div>`;
 }
 
 function baixarPDF() {
-  if (!_reciboData) { alert('Nenhum recibo carregado. Clique em 🧾 PDF primeiro.'); return; }
+  if (!_reciboData) { alert('Nenhum recibo carregado.'); return; }
+  const btn = document.getElementById('btn-baixar-pdf'); const textoOriginal = btn.innerText;
+  btn.innerText = '⏳ Gerando...'; btn.disabled = true;
 
-  const btn = document.getElementById('btn-baixar-pdf');
-  const textoOriginal = btn.innerText;
-  btn.innerText = '⏳ Gerando...';
-  btn.disabled = true;
-
-  // Cria um container temporário LIMPO, sem nenhum CSS herdado
   const container = document.createElement('div');
-  container.style.cssText = [
-    'position:absolute',
-    'top:0',
-    'left:0',
-    'width:794px',
-    'background:#fff',
-    'z-index:-9999',
-    'overflow:visible',
-    'padding:0',
-    'margin:0',
-    'border:none',
-    'box-shadow:none',
-    'transform:none',
-    'clip:auto',
-    'clip-path:none',
-    'opacity:1',
-  ].join(';');
-
+  container.style.cssText = 'position:absolute;top:0;left:0;width:794px;background:#fff;z-index:-9999;overflow:visible;padding:0;margin:0;border:none;';
   container.innerHTML = buildReciboHTML(_reciboData);
   document.body.appendChild(container);
-
   const el = container.firstElementChild;
 
-  // Pequeno delay para o browser renderizar antes de capturar
   setTimeout(() => {
-    html2pdf()
-      .set({
+    html2pdf().set({
         margin:      0,
         filename:    'Recibo_Atelie03.pdf',
         image:       { type: 'jpeg', quality: 0.99 },
-        html2canvas: {
-          scale:           2,
-          useCORS:         true,
-          allowTaint:      true,
-          backgroundColor: '#ffffff',
-          scrollX:         0,
-          scrollY:         0,
-          x:               0,
-          y:               0,
-          windowWidth:     794,
-          windowHeight:    1123,
-          logging:         false
-        },
-        jsPDF: {
-          unit:        'px',
-          format:      [794, 1123],
-          orientation: 'portrait'
-        }
-      })
-      .from(el)
-      .save()
-      .then(() => {
-        document.body.removeChild(container);
-        btn.innerText = textoOriginal;
-        btn.disabled  = false;
-      })
-      .catch(err => {
-        document.body.removeChild(container);
-        console.error('Erro PDF:', err);
-        btn.innerText = '❌ Erro ao gerar';
-        btn.disabled  = false;
-        setTimeout(() => { btn.innerText = textoOriginal; }, 2500);
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0, x: 0, y: 0, windowWidth: 794, windowHeight: 1123, logging: false },
+        jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait' }
+      }).from(el).save().then(() => {
+        document.body.removeChild(container); btn.innerText = textoOriginal; btn.disabled  = false;
+      }).catch(err => {
+        document.body.removeChild(container); btn.innerText = '❌ Erro'; btn.disabled  = false; setTimeout(() => { btn.innerText = textoOriginal; }, 2500);
       });
   }, 200);
 }
@@ -1687,52 +1374,32 @@ function baixarPDF() {
 // FILTROS E RENDERIZAÇÃO
 // ==========================================
 function getFiltredSaidas() {
-  let list = [...saidas];
-  const ini = document.getElementById('filter-inicio')?.value;
-  const fim = document.getElementById('filter-fim')?.value;
-  if (ini) list = list.filter(s => s.data >= ini);
-  if (fim) list = list.filter(s => s.data <= fim);
+  let list = [...saidas]; const ini = document.getElementById('filter-inicio')?.value; const fim = document.getElementById('filter-fim')?.value;
+  if (ini) list = list.filter(s => s.data >= ini); if (fim) list = list.filter(s => s.data <= fim);
   return list.sort((a,b) => b.data.localeCompare(a.data));
 }
 
 function renderSaidas() {
-  const tbody = document.getElementById('saidas-body');
-  const list = getFiltredSaidas();
-  if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">📦</div><p>Nenhuma saída registrada ainda.</p></div></td></tr>';
-    document.getElementById('saidas-resumo').innerHTML = '';
-    return;
-  }
+  const tbody = document.getElementById('saidas-body'); const list = getFiltredSaidas();
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-td" data-label=""><div class="empty"><div class="empty-icon">📦</div><p>Nenhuma saída registrada ainda.</p></div></td></tr>'; document.getElementById('saidas-resumo').innerHTML = ''; return; }
 
   let globalPedidos = 0, globalDevs = 0;
-  list.forEach(s => {
-     const arr = s.itens || [s];
-     arr.forEach(i => { globalPedidos += (parseInt(i.qtd) || 0); globalDevs += (parseInt(i.dev) || 0); });
-  });
+  list.forEach(s => { (s.itens || [s]).forEach(i => { globalPedidos += (parseInt(i.qtd) || 0); globalDevs += (parseInt(i.dev) || 0); }); });
 
   document.getElementById('saidas-resumo').innerHTML = `
-    <div style="background:var(--green-pale);border-radius:8px;padding:8px 12px;font-size:12px;">
-      <strong style="color:var(--green)">📦 ${list.length} pacotes fechados</strong>
-    </div>
-    <div style="background:var(--green-pale);border-radius:8px;padding:8px 12px;font-size:12px;">
-      <strong style="color:var(--green)">✅ ${globalPedidos} peças entregues</strong>
-    </div>
-    <div style="background:#fee2e2;border-radius:8px;padding:8px 12px;font-size:12px;">
-      <strong style="color:#991b1b">↩️ ${globalDevs} peças dev.</strong>
-    </div>
-  `;
+    <div style="background:var(--green-pale);border-radius:8px;padding:8px 12px;font-size:12px;"><strong style="color:var(--green)">📦 ${list.length} pacotes fechados</strong></div>
+    <div style="background:var(--green-pale);border-radius:8px;padding:8px 12px;font-size:12px;"><strong style="color:var(--green)">✅ ${globalPedidos} peças entregues</strong></div>
+    <div style="background:#fee2e2;border-radius:8px;padding:8px 12px;font-size:12px;"><strong style="color:#991b1b">↩️ ${globalDevs} peças dev.</strong></div>`;
 
   tbody.innerHTML = list.map(s => {
-    const c = clientes.find(x => x.id == s.clienteId);
-    const nomeCli = c ? c.nome : 'Consumidor';
+    const c = clientes.find(x => x.id == s.clienteId); const nomeCli = c ? c.nome : 'Consumidor';
     const itensPacote = s.itens || [s];
     const pacoteQtdTotal = itensPacote.reduce((acc, i) => acc + (parseInt(i.qtd)||0), 0);
     const pacoteDevTotal = itensPacote.reduce((acc, i) => acc + (parseInt(i.dev)||0), 0);
     const pacoteValorTotal = itensPacote.reduce((acc, i) => acc + (parseFloat(i.valor||0) * parseInt(i.qtd||0)), 0);
     const descItens = itensPacote.map(i => `<span style="display:block;margin-bottom:2px;font-size:12px;">• ${i.itemNome} (${i.qtd}x)</span>`).join('');
 
-    return `
-    <tr>
+    return `<tr>
       <td data-label="Data">${formatDate(s.data)}</td>
       <td data-label="Itens do Pacote" style="line-height:1.2;">${descItens}</td>
       <td data-label="Cliente/Ped">${nomeCli}<br><small style="color:var(--gray)">${s.pedido||'Avulso'}</small></td>
@@ -1743,39 +1410,18 @@ function renderSaidas() {
         <button type="button" class="btn btn-sm btn-outline" onclick="editSaida(${s.id})">✏️</button>
         <button type="button" class="btn btn-sm btn-danger" onclick="deleteSaida(${s.id})">🗑️</button>
       </td>
-    </tr>
-  `}).join('');
-}
-
-function deleteSaida(id) {
-  if (!confirm('Deletar pacote inteiro? Todos os itens voltarão ao estoque.')) return;
-  const s = saidas.find(x => x.id == id);
-  if (s) {
-      const itensArr = s.itens || [s];
-      itensArr.forEach(oi => {
-         const itemEstq = estoque.find(i => i.id == oi.itemId);
-         if (itemEstq) itemEstq.qtd += (oi.qtd - (oi.dev || 0));
-      });
-  }
-  saidas = saidas.filter(x => x.id != id);
-  save(); renderSaidas(); renderDash();
+    </tr>`;
+  }).join('');
 }
 
 function limparSelectsEFiltrar() { document.getElementById('filter-mes').value = ''; document.getElementById('filter-ano').value = ''; renderSaidas(); }
 function limparFiltros() { document.getElementById('filter-inicio').value = ''; document.getElementById('filter-fim').value = ''; document.getElementById('filter-mes').value = ''; document.getElementById('filter-ano').value = ''; renderSaidas(); }
-
 function aplicarFiltroMes() {
-  const mes = document.getElementById('filter-mes').value;
-  let ano = document.getElementById('filter-ano').value;
+  const mes = document.getElementById('filter-mes').value; let ano = document.getElementById('filter-ano').value;
   if (mes && !ano) { ano = new Date().getFullYear().toString(); document.getElementById('filter-ano').value = ano; }
   if (ano) {
-    if (mes) {
-      document.getElementById('filter-inicio').value = `${ano}-${mes}-01`;
-      const lastDay = new Date(ano, mes, 0).getDate();
-      document.getElementById('filter-fim').value = `${ano}-${mes}-${lastDay}`;
-    } else {
-      document.getElementById('filter-inicio').value = `${ano}-01-01`; document.getElementById('filter-fim').value = `${ano}-12-31`;
-    }
+    if (mes) { document.getElementById('filter-inicio').value = `${ano}-${mes}-01`; document.getElementById('filter-fim').value = `${ano}-${mes}-${new Date(ano, mes, 0).getDate()}`; } 
+    else { document.getElementById('filter-inicio').value = `${ano}-01-01`; document.getElementById('filter-fim').value = `${ano}-12-31`; }
   } else if (!mes) { document.getElementById('filter-inicio').value = ''; document.getElementById('filter-fim').value = ''; }
   renderSaidas();
 }
@@ -1784,38 +1430,27 @@ function aplicarFiltroMes() {
 // MÓDULO FINANCEIRO & DASHBOARD 
 // ==========================================
 function renderFinanceiro() {
-  const mes = document.getElementById('fin-mes').value;
-  const ano = document.getElementById('fin-ano').value;
+  const mes = document.getElementById('fin-mes').value, ano = document.getElementById('fin-ano').value;
   let list = [...saidas];
-  
-  if (mes && ano) { list = list.filter(s => s.data.startsWith(`${ano}-${mes}`)); }
-  else if (ano) { list = list.filter(s => s.data.startsWith(ano)); }
-  else if (mes) { list = list.filter(s => s.data.substring(5, 7) === mes); }
+  if (mes && ano) list = list.filter(s => s.data.startsWith(`${ano}-${mes}`));
+  else if (ano) list = list.filter(s => s.data.startsWith(ano));
+  else if (mes) list = list.filter(s => s.data.substring(5, 7) === mes);
 
-  let bruta = 0, devVal = 0;
-  const map = {};
-
+  let bruta = 0, devVal = 0; const map = {};
   list.forEach(s => {
-    const arrItens = s.itens || [s];
-    arrItens.forEach(i => {
-       bruta += (i.valor * i.qtd);
-       devVal += (i.valor * i.dev);
+    (s.itens || [s]).forEach(i => {
+       bruta += (i.valor * i.qtd); devVal += (i.valor * i.dev);
        const key = `${i.itemId}`;
        if (!map[key]) map[key] = { nome: i.itemNome, tam: i.itemTamanho, qtd: 0, dev: 0, val: 0 };
        map[key].qtd += i.qtd; map[key].dev += i.dev; map[key].val += i.valor * (i.qtd - i.dev); 
     });
   });
 
-  document.getElementById('fin-bruta').textContent = formatCurrency(bruta);
-  document.getElementById('fin-dev').textContent = formatCurrency(devVal);
-  document.getElementById('fin-liquida').textContent = formatCurrency(bruta - devVal);
-
-  const tbody = document.getElementById('fin-body');
-  const rows = Object.values(map);
+  document.getElementById('fin-bruta').textContent = formatCurrency(bruta); document.getElementById('fin-dev').textContent = formatCurrency(devVal); document.getElementById('fin-liquida').textContent = formatCurrency(bruta - devVal);
+  const tbody = document.getElementById('fin-body'); const rows = Object.values(map);
   if (!rows.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-td" data-label=""><div class="empty"><p>Nenhum dado para o período.</p></div></td></tr>'; } 
   else {
-    tbody.innerHTML = rows.map(r => `
-      <tr>
+    tbody.innerHTML = rows.map(r => `<tr>
         <td data-label="Item">${r.nome}</td>
         <td data-label="Tamanho">${r.tam}</td>
         <td data-label="Qtd Vendida" style="font-weight:700;color:var(--green)">${r.qtd}</td>
@@ -1826,21 +1461,13 @@ function renderFinanceiro() {
 }
 
 function renderDash() {
-  document.getElementById('dash-total-itens').textContent = estoque.length;
-  document.getElementById('dash-total-clientes').textContent = clientes.length;
-
+  document.getElementById('dash-total-itens').textContent = estoque.length; document.getElementById('dash-total-clientes').textContent = clientes.length;
   let totalPed = 0, bruta = 0, devVal = 0;
-  saidas.forEach(s => {
-     const arrItens = s.itens || [s];
-     arrItens.forEach(i => { totalPed += i.qtd; bruta += (i.valor * i.qtd); devVal += (i.valor * i.dev); });
-  });
-  
-  document.getElementById('dash-total-pedidos').textContent = totalPed;
-  document.getElementById('dash-receita').textContent = formatCurrency(bruta - devVal);
+  saidas.forEach(s => { (s.itens || [s]).forEach(i => { totalPed += i.qtd; bruta += (i.valor * i.qtd); devVal += (i.valor * i.dev); }); });
+  document.getElementById('dash-total-pedidos').textContent = totalPed; document.getElementById('dash-receita').textContent = formatCurrency(bruta - devVal);
 
-  const low = estoque.filter(i => i.qtd <= 3);
-  const cont = document.getElementById('dash-low-stock');
-  if (!low.length) { cont.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><p>Tudo certo no estoque.</p></div>'; } 
+  const low = estoque.filter(i => i.qtd <= 3); const cont = document.getElementById('dash-low-stock');
+  if (!low.length) cont.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><p>Tudo certo no estoque.</p></div>';
   else {
     const sizeBadge = { PP:'badge-pp', P:'badge-p', M:'badge-m', G:'badge-g', GG:'badge-gg', Único:'badge-u' };
     cont.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;">${low.map(i=>`
@@ -1852,16 +1479,13 @@ function renderDash() {
   }
 }
 
-function formatDate(d) {
-  if (!d) return '-';
-  const [y,m,day] = d.split('-');
-  return `${day}/${m}/${y}`;
-}
+function formatDate(d) { if (!d) return '-'; const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`; }
 
-// INIT 
-renderDash(); 
-const abaSalva = localStorage.getItem('atelie_aba_atual') || 'dashboard';
-showPage(abaSalva);
+// INICIALIZAÇÃO CORRETA PARA GITHUB PAGES
+window.onload = function() {
+    initLockScreen();
+};
+
 </script>
 </body>
 </html>
